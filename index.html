@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ДДС</title>
+<style>
+  :root{
+    --bg:#0f1115;
+    --card:#171a21;
+    --card2:#1e222b;
+    --border:#2a2f3a;
+    --text:#eef0f3;
+    --muted:#8b92a3;
+    --income:#2fbf71;
+    --income-dark:#1e8a52;
+    --expense:#ef4a4a;
+    --expense-dark:#b93636;
+    --accent:#4a8cef;
+    --radius:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--text); padding-bottom:40px;
+  }
+  header{
+    padding:18px 16px 10px; position:sticky; top:0; background:var(--bg); z-index:5;
+    border-bottom:1px solid var(--border);
+  }
+  header h1{margin:0; font-size:20px; font-weight:700;}
+  .balance-row{display:flex; gap:10px; margin-top:12px;}
+  .balance-card{flex:1; background:var(--card); border-radius:var(--radius); padding:10px 12px;}
+  .balance-card .label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+  .balance-card .value{font-size:18px; font-weight:700; margin-top:2px;}
+  .balance-card.income .value{color:var(--income);}
+  .balance-card.expense .value{color:var(--expense);}
+  .balance-card.total .value{color:var(--accent);}
+
+  main{padding:14px 16px;}
+
+  .type-toggle{display:flex; gap:8px; margin-bottom:14px;}
+  .type-btn{
+    flex:1; padding:14px; border-radius:var(--radius); border:2px solid var(--border);
+    background:var(--card); color:var(--muted); font-size:15px; font-weight:600; text-align:center;
+  }
+  .type-btn.active.income{border-color:var(--income); color:var(--income); background:rgba(47,191,113,.1);}
+  .type-btn.active.expense{border-color:var(--expense); color:var(--expense); background:rgba(239,74,74,.1);}
+
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.03em;}
+  select, input[type=number], input[type=text], textarea{
+    width:100%; padding:14px; border-radius:12px; border:1px solid var(--border);
+    background:var(--card2); color:var(--text); font-size:16px; appearance:none; -webkit-appearance:none;
+  }
+  select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238b92a3' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>"); background-repeat:no-repeat; background-position:right 14px center;}
+  textarea{resize:vertical; min-height:60px; font-family:inherit;}
+
+  .amount-input{font-size:26px; font-weight:700; text-align:center;}
+
+  .photo-field{display:flex; gap:10px;}
+  .photo-btn{
+    flex:1; padding:16px 8px; border-radius:12px; border:1px dashed var(--border);
+    background:var(--card2); color:var(--muted); font-size:13px; display:flex; flex-direction:column;
+    align-items:center; gap:6px;
+  }
+  .photo-preview{position:relative; width:100%;}
+  .photo-preview img{width:100%; border-radius:12px; display:block; max-height:240px; object-fit:cover;}
+  .photo-remove{
+    position:absolute; top:8px; right:8px; background:rgba(0,0,0,.6); color:#fff; border:none;
+    border-radius:50%; width:30px; height:30px; font-size:16px;
+  }
+
+  .submit-btn{
+    width:100%; padding:16px; border:none; border-radius:var(--radius); font-size:16px; font-weight:700;
+    color:#fff; margin-top:6px;
+  }
+  .submit-btn.income{background:var(--income);}
+  .submit-btn.expense{background:var(--expense);}
+  .submit-btn:disabled{opacity:.5;}
+
+  .sync-status{font-size:12px; text-align:center; margin-top:8px; color:var(--muted); min-height:16px;}
+  .sync-status.pending{color:#e0a63c;}
+  .sync-status.error{color:var(--expense);}
+  .sync-status.ok{color:var(--income);}
+
+  .section-title{font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin:22px 0 10px; display:flex; justify-content:space-between; align-items:center;}
+  .section-title button{background:none; border:none; color:var(--accent); font-size:12px; padding:0;}
+
+  .entry{
+    background:var(--card); border-radius:12px; padding:12px 14px; margin-bottom:8px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .entry .stripe{width:4px; align-self:stretch; border-radius:2px;}
+  .entry.income .stripe{background:var(--income);}
+  .entry.expense .stripe{background:var(--expense);}
+  .entry .thumb{width:42px; height:42px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--card2);}
+  .entry .info{flex:1; min-width:0;}
+  .entry .cat{font-size:14px; font-weight:600;}
+  .entry .comment{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .entry .meta{font-size:11px; color:var(--muted); margin-top:2px;}
+  .entry .amount{font-size:15px; font-weight:700; white-space:nowrap;}
+  .entry.income .amount{color:var(--income);}
+  .entry.expense .amount{color:var(--expense);}
+  .entry .dot{width:6px; height:6px; border-radius:50%; display:inline-block; margin-left:4px;}
+  .entry .dot.pending{background:#e0a63c;}
+  .entry .dot.error{background:var(--expense);}
+
+  .empty{text-align:center; color:var(--muted); font-size:14px; padding:30px 0;}
+
+  /* fullscreen camera */
+  .camera-overlay{
+    position:fixed; inset:0; background:#000; z-index:100; display:flex; flex-direction:column;
+  }
+  .camera-overlay video{flex:1; width:100%; object-fit:cover; background:#000;}
+  .camera-controls{
+    position:absolute; top:0; left:0; right:0; padding:16px; display:flex; justify-content:space-between;
+    z-index:2;
+  }
+  .camera-controls button{
+    background:rgba(0,0,0,.5); color:#fff; border:none; border-radius:50%; width:42px; height:42px; font-size:18px;
+  }
+  .camera-shutter-row{
+    position:absolute; bottom:26px; left:0; right:0; display:flex; justify-content:center; z-index:2;
+  }
+  .shutter{
+    width:70px; height:70px; border-radius:50%; background:#fff; border:4px solid rgba(255,255,255,.4);
+  }
+
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:90; display:flex; align-items:flex-end;
+  }
+  .modal{
+    background:var(--card); width:100%; border-radius:18px 18px 0 0; padding:18px 16px 26px; max-height:85vh; overflow:auto;
+  }
+  .modal h3{margin:0 0 14px;}
+  .modal-actions{display:flex; gap:10px; margin-top:16px;}
+  .modal-actions button{flex:1; padding:13px; border-radius:10px; border:none; font-size:14px; font-weight:600;}
+  .btn-cancel{background:var(--card2); color:var(--text);}
+  .btn-save{background:var(--accent); color:#fff;}
+  .btn-delete{background:var(--expense); color:#fff;}
+
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--card2);
+    color:var(--text); padding:10px 18px; border-radius:20px; font-size:13px; z-index:200; border:1px solid var(--border);
+  }
+
+  .csv-link{display:block; text-align:center; margin-top:18px; color:var(--muted); font-size:12px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ДДС</h1>
+  <div class="balance-row">
+    <div class="balance-card income"><div class="label">Доход</div><div class="value" id="sumIncome">0</div></div>
+    <div class="balance-card expense"><div class="label">Расход</div><div class="value" id="sumExpense">0</div></div>
+    <div class="balance-card total"><div class="label">Итого</div><div class="value" id="sumTotal">0</div></div>
+  </div>
+</header>
+
+<main>
+
+  <div class="type-toggle">
+    <button class="type-btn income active" id="btnIncome">Доход</button>
+    <button class="type-btn expense" id="btnExpense">Расход</button>
+  </div>
+
+  <div class="field">
+    <label>Статья</label>
+    <select id="category"></select>
+  </div>
+
+  <div class="field">
+    <label>Сумма, ₽</label>
+    <input type="number" inputmode="decimal" id="amount" class="amount-input" placeholder="0">
+  </div>
+
+  <div class="field">
+    <label>Комментарий (необязательно)</label>
+    <textarea id="comment" placeholder="Например: чек №..., контрагент, назначение"></textarea>
+  </div>
+
+  <div class="field">
+    <label>Фото чека (необязательно)</label>
+    <div id="photoArea">
+      <div class="photo-field">
+        <button type="button" class="photo-btn" id="btnCamera">📷 Камера</button>
+        <button type="button" class="photo-btn" id="btnGallery">🖼 Галерея</button>
+      </div>
+    </div>
+    <input type="file" id="galleryInput" accept="image/*" style="display:none">
+  </div>
+
+  <button class="submit-btn income" id="btnSubmit">Добавить доход</button>
+  <div class="sync-status" id="syncStatus"></div>
+
+  <div class="section-title">
+    <span>Последние записи</span>
+    <button id="btnRetry" style="display:none;">Повторить отправку</button>
+  </div>
+  <div id="entriesList"></div>
+
+  <a class="csv-link" href="#" id="exportCsv">Экспорт в CSV</a>
+</main>
+
+<div class="camera-overlay" id="cameraOverlay" style="display:none;">
+  <video id="cameraVideo" autoplay playsinline muted></video>
+  <div class="camera-controls">
+    <button id="btnCameraClose">✕</button>
+    <button id="btnCameraSwitch">⟳</button>
+  </div>
+  <div class="camera-shutter-row">
+    <button class="shutter" id="btnShutter"></button>
+  </div>
+</div>
+
+<canvas id="captureCanvas" style="display:none;"></canvas>
+
+<div id="editModalBackdrop" class="modal-backdrop" style="display:none;">
+  <div class="modal">
+    <h3>Редактировать запись</h3>
+    <div class="field">
+      <label>Тип</label>
+      <select id="editType">
+        <option value="income">Доход</option>
+        <option value="expense">Расход</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Статья</label>
+      <select id="editCategory"></select>
+    </div>
+    <div class="field">
+      <label>Сумма, ₽</label>
+      <input type="number" id="editAmount">
+    </div>
+    <div class="field">
+      <label>Комментарий</label>
+      <textarea id="editComment"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="btnEditCancel">Отмена</button>
+      <button class="btn-delete" id="btnEditDelete">Удалить</button>
+      <button class="btn-save" id="btnEditSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ======================= НАСТРОЙКИ (правьте под себя) ======================= */
+
+// URL веб-приложения Google Apps Script (см. инструкцию apps_script_instructions.txt)
+const SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+// Статьи доходов и расходов — свободно редактируйте списки
+const CATEGORIES = {
+  income: ["Продажа билетов", "Аренда зала", "Кейтеринг", "Прочие доходы"],
+  expense: ["Аренда", "Зарплата", "Коммунальные услуги", "Закупки", "Реклама", "Транспорт", "Прочее"]
+};
+
+/* ============================================================================ */
+
+const state = {
+  type: "income",
+  photo: null, // {dataUrl, mime}
+  entries: [], // local cache of all entries (from localStorage, merged with server)
+  editingId: null,
+  facingMode: "environment",
+  stream: null
+};
+
+const el = id => document.getElementById(id);
+
+function fillCategorySelect(select, type, keepValue){
+  const prev = keepValue ? select.value : null;
+  select.innerHTML = "";
+  CATEGORIES[type].forEach(c=>{
+    const o = document.createElement("option");
+    o.value = c; o.textContent = c;
+    select.appendChild(o);
+  });
+  if(prev && CATEGORIES[type].includes(prev)) select.value = prev;
+}
+
+function setType(type){
+  state.type = type;
+  el("btnIncome").classList.toggle("active", type==="income");
+  el("btnExpense").classList.toggle("active", type==="expense");
+  el("btnSubmit").className = "submit-btn " + type;
+  el("btnSubmit").textContent = type==="income" ? "Добавить доход" : "Добавить расход";
+  fillCategorySelect(el("category"), type, false);
+}
+
+el("btnIncome").onclick = ()=> setType("income");
+el("btnExpense").onclick = ()=> setType("expense");
+setType("income");
+
+/* ---------- Фото: камера ---------- */
+
+el("btnCamera").onclick = openCamera;
+el("btnGallery").onclick = ()=> el("galleryInput").click();
+
+el("galleryInput").onchange = (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=> setPhoto(reader.result, file.type);
+  reader.readAsDataURL(file);
+};
+
+async function openCamera(){
+  el("cameraOverlay").style.display = "flex";
+  try{
+    state.stream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode: state.facingMode }, audio:false
+    });
+    el("cameraVideo").srcObject = state.stream;
+  }catch(err){
+    showToast("Нет доступа к камере");
+    closeCamera();
+  }
+}
+function closeCamera(){
+  el("cameraOverlay").style.display = "none";
+  if(state.stream){ state.stream.getTracks().forEach(t=>t.stop()); state.stream=null; }
+}
+el("btnCameraClose").onclick = closeCamera;
+el("btnCameraSwitch").onclick = ()=>{
+  state.facingMode = state.facingMode === "environment" ? "user" : "environment";
+  closeCamera(); openCamera();
+};
+el("btnShutter").onclick = ()=>{
+  const video = el("cameraVideo");
+  const canvas = el("captureCanvas");
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  const ctx = canvas.getContext("2d");
+  // no mirror effect regardless of facing mode
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+  setPhoto(dataUrl, "image/jpeg");
+  closeCamera();
+};
+
+function setPhoto(dataUrl, mime){
+  state.photo = {dataUrl, mime};
+  renderPhotoArea();
+}
+function renderPhotoArea(){
+  const area = el("photoArea");
+  if(state.photo){
+    area.innerHTML = `
+      <div class="photo-preview">
+        <img src="${state.photo.dataUrl}">
+        <button type="button" class="photo-remove" id="btnRemovePhoto">✕</button>
+      </div>`;
+    el("btnRemovePhoto").onclick = ()=>{ state.photo = null; renderPhotoArea(); };
+  } else {
+    area.innerHTML = `
+      <div class="photo-field">
+        <button type="button" class="photo-btn" id="btnCamera">📷 Камера</button>
+        <button type="button" class="photo-btn" id="btnGallery">🖼 Галерея</button>
+      </div>`;
+    el("btnCamera").onclick = openCamera;
+    el("btnGallery").onclick = ()=> el("galleryInput").click();
+  }
+}
+
+/* ---------- Хранение и синхронизация ---------- */
+
+function loadEntries(){
+  try{
+    state.entries = JSON.parse(localStorage.getItem("dds_entries") || "[]");
+  }catch(e){ state.entries = []; }
+}
+function saveEntries(){
+  localStorage.setItem("dds_entries", JSON.stringify(state.entries));
+}
+
+function uid(){
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+}
+
+async function sendToServer(payload){
+  if(!SCRIPT_URL || SCRIPT_URL.indexOf("PASTE_") === 0){
+    throw new Error("no_url");
+  }
+  const res = await fetch(SCRIPT_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"text/plain;charset=utf-8" }, // избегаем preflight
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if(!data.ok) throw new Error(data.error || "server_error");
+  return data;
+}
+
+async function submitEntry(){
+  const amountVal = parseFloat(el("amount").value);
+  if(!amountVal || amountVal <= 0){
+    showToast("Введите сумму");
+    return;
+  }
+  const entry = {
+    id: uid(),
+    timestamp: new Date().toISOString(),
+    type: state.type,
+    category: el("category").value,
+    amount: amountVal,
+    comment: el("comment").value.trim(),
+    photo: state.photo ? state.photo.dataUrl : null,
+    photoUrl: null,
+    status: "pending"
+  };
+
+  state.entries.unshift(entry);
+  saveEntries();
+  renderEntries();
+  renderTotals();
+
+  el("amount").value = "";
+  el("comment").value = "";
+  state.photo = null;
+  renderPhotoArea();
+
+  syncEntry(entry);
+}
+
+async function syncEntry(entry){
+  setSyncStatus("Отправка...", "pending");
+  try{
+    const data = await sendToServer({
+      action:"add",
+      id: entry.id,
+      timestamp: entry.timestamp,
+      type: entry.type,
+      category: entry.category,
+      amount: entry.amount,
+      comment: entry.comment,
+      photoBase64: entry.photo ? entry.photo.split(",")[1] : null,
+      photoMime: entry.photo ? entry.photo.split(";")[0].split(":")[1] : null
+    });
+    entry.status = "synced";
+    if(data.photoUrl) entry.photoUrl = data.photoUrl;
+    setSyncStatus("Сохранено", "ok");
+  }catch(err){
+    entry.status = "error";
+    setSyncStatus("Не отправлено — сохранено локально", "error");
+    el("btnRetry").style.display = "inline";
+  }
+  saveEntries();
+  renderEntries();
+}
+
+function retryPending(){
+  const pending = state.entries.filter(e=> e.status !== "synced");
+  if(pending.length === 0){ el("btnRetry").style.display="none"; return; }
+  pending.forEach(e=> syncEntry(e));
+}
+el("btnRetry").onclick = retryPending;
+
+function setSyncStatus(text, cls){
+  const s = el("syncStatus");
+  s.textContent = text;
+  s.className = "sync-status " + (cls||"");
+  if(cls === "ok"){
+    setTimeout(()=>{ if(s.textContent===text) s.textContent=""; }, 2000);
+  }
+}
+
+el("btnSubmit").onclick = submitEntry;
+
+/* ---------- Отрисовка списка и итогов ---------- */
+
+function renderTotals(){
+  let inc=0, exp=0;
+  state.entries.forEach(e=>{
+    if(e.deleted) return;
+    if(e.type==="income") inc += e.amount; else exp += e.amount;
+  });
+  el("sumIncome").textContent = fmt(inc);
+  el("sumExpense").textContent = fmt(exp);
+  el("sumTotal").textContent = fmt(inc-exp);
+}
+function fmt(n){
+  return Math.round(n).toLocaleString("ru-RU");
+}
+
+function renderEntries(){
+  const list = el("entriesList");
+  const visible = state.entries.filter(e=>!e.deleted).slice(0, 100);
+  if(visible.length===0){
+    list.innerHTML = `<div class="empty">Пока нет записей</div>`;
+    return;
+  }
+  list.innerHTML = visible.map(e=>{
+    const thumb = e.photo ? `<img class="thumb" src="${e.photo}">` : "";
+    const dot = e.status==="error" ? `<span class="dot error"></span>` : e.status==="pending" ? `<span class="dot pending"></span>` : "";
+    const d = new Date(e.timestamp);
+    const dateStr = d.toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"}) + " " + d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+    return `<div class="entry ${e.type}" data-id="${e.id}">
+      <div class="stripe"></div>
+      ${thumb}
+      <div class="info">
+        <div class="cat">${escapeHtml(e.category)}${dot}</div>
+        ${e.comment ? `<div class="comment">${escapeHtml(e.comment)}</div>` : ""}
+        <div class="meta">${dateStr}</div>
+      </div>
+      <div class="amount">${e.type==="expense"?"−":"+"}${fmt(e.amount)} ₽</div>
+    </div>`;
+  }).join("");
+
+  list.querySelectorAll(".entry").forEach(node=>{
+    node.onclick = ()=> openEditModal(node.getAttribute("data-id"));
+  });
+}
+function escapeHtml(s){
+  return (s||"").replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+
+/* ---------- Редактирование / удаление ---------- */
+
+function openEditModal(id){
+  const entry = state.entries.find(e=>e.id===id);
+  if(!entry) return;
+  state.editingId = id;
+  el("editType").value = entry.type;
+  fillCategorySelect(el("editCategory"), entry.type, false);
+  el("editCategory").value = entry.category;
+  el("editAmount").value = entry.amount;
+  el("editComment").value = entry.comment || "";
+  el("editModalBackdrop").style.display = "flex";
+}
+el("editType").onchange = ()=> fillCategorySelect(el("editCategory"), el("editType").value, false);
+el("btnEditCancel").onclick = ()=> el("editModalBackdrop").style.display="none";
+
+el("btnEditSave").onclick = async ()=>{
+  const entry = state.entries.find(e=>e.id===state.editingId);
+  if(!entry) return;
+  entry.type = el("editType").value;
+  entry.category = el("editCategory").value;
+  entry.amount = parseFloat(el("editAmount").value) || entry.amount;
+  entry.comment = el("editComment").value.trim();
+  entry.status = "pending";
+  saveEntries(); renderEntries(); renderTotals();
+  el("editModalBackdrop").style.display="none";
+  try{
+    await sendToServer({ action:"edit", id:entry.id, type:entry.type, category:entry.category, amount:entry.amount, comment:entry.comment });
+    entry.status = "synced";
+  }catch(e){ entry.status="error"; el("btnRetry").style.display="inline"; }
+  saveEntries(); renderEntries();
+};
+
+el("btnEditDelete").onclick = async ()=>{
+  const entry = state.entries.find(e=>e.id===state.editingId);
+  if(!entry) return;
+  entry.deleted = true;
+  saveEntries(); renderEntries(); renderTotals();
+  el("editModalBackdrop").style.display="none";
+  try{
+    await sendToServer({ action:"delete", id:entry.id });
+  }catch(e){ /* остаётся помеченным удалённым локально, попадёт в retry при необходимости */ }
+};
+
+/* ---------- CSV экспорт ---------- */
+
+el("exportCsv").onclick = (e)=>{
+  e.preventDefault();
+  const rows = [["Дата","Тип","Статья","Сумма","Комментарий"]];
+  state.entries.filter(x=>!x.deleted).forEach(en=>{
+    rows.push([en.timestamp, en.type==="income"?"Доход":"Расход", en.category, en.amount, en.comment||""]);
+  });
+  const csv = rows.map(r=> r.map(v=> `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob = new Blob(["\ufeff"+csv], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "dds.csv"; a.click();
+  URL.revokeObjectURL(url);
+};
+
+function showToast(text){
+  const t = document.createElement("div");
+  t.className = "toast"; t.textContent = text;
+  document.body.appendChild(t);
+  setTimeout(()=> t.remove(), 2200);
+}
+
+/* ---------- Инициализация ---------- */
+
+loadEntries();
+renderEntries();
+renderTotals();
+if(state.entries.some(e=>e.status!=="synced")) el("btnRetry").style.display="inline";
+</script>
+</body>
+</html>
