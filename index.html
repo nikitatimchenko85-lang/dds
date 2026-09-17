@@ -167,6 +167,11 @@
   </div>
 
   <div class="field">
+    <label>Сотрудник</label>
+    <input type="text" id="employee" placeholder="Имя сотрудника">
+  </div>
+
+  <div class="field">
     <label>Статья</label>
     <select id="category"></select>
   </div>
@@ -228,6 +233,10 @@
       </select>
     </div>
     <div class="field">
+      <label>Сотрудник</label>
+      <input type="text" id="editEmployee">
+    </div>
+    <div class="field">
       <label>Статья</label>
       <select id="editCategory"></select>
     </div>
@@ -251,7 +260,7 @@
 /* ======================= НАСТРОЙКИ (правьте под себя) ======================= */
 
 // URL веб-приложения Google Apps Script (см. инструкцию apps_script_instructions.txt)
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEuxI6dsy-30cQ8I-zYOg_z_S0TGAS-wtxYmfr8WHicxYNJ5cOhMpXzLVzw6_rxS8/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcGRHM_6KHUJoySM4dU0xkfSzoWKZH7D9JVt987ollOwQl7wz0T8wlEGIk1sYSifM/exec";
 
 // Статьи доходов и расходов — свободно редактируйте списки
 const CATEGORIES = {
@@ -295,6 +304,12 @@ function setType(type){
 el("btnIncome").onclick = ()=> setType("income");
 el("btnExpense").onclick = ()=> setType("expense");
 setType("income");
+
+/* запоминаем последнее введённое имя сотрудника, чтобы не вбивать заново */
+el("employee").value = localStorage.getItem("dds_last_employee") || "";
+el("employee").addEventListener("input", ()=>{
+  localStorage.setItem("dds_last_employee", el("employee").value);
+});
 
 /* ---------- Фото: камера ---------- */
 
@@ -405,6 +420,7 @@ async function submitEntry(){
     id: uid(),
     timestamp: new Date().toISOString(),
     type: state.type,
+    employee: el("employee").value.trim(),
     category: el("category").value,
     amount: amountVal,
     comment: el("comment").value.trim(),
@@ -434,6 +450,7 @@ async function syncEntry(entry){
       id: entry.id,
       timestamp: entry.timestamp,
       type: entry.type,
+      employee: entry.employee,
       category: entry.category,
       amount: entry.amount,
       comment: entry.comment,
@@ -498,13 +515,14 @@ function renderEntries(){
     const dot = e.status==="error" ? `<span class="dot error"></span>` : e.status==="pending" ? `<span class="dot pending"></span>` : "";
     const d = new Date(e.timestamp);
     const dateStr = d.toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"}) + " " + d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+    const metaStr = dateStr + (e.employee ? " · " + escapeHtml(e.employee) : "");
     return `<div class="entry ${e.type}" data-id="${e.id}">
       <div class="stripe"></div>
       ${thumb}
       <div class="info">
         <div class="cat">${escapeHtml(e.category)}${dot}</div>
         ${e.comment ? `<div class="comment">${escapeHtml(e.comment)}</div>` : ""}
-        <div class="meta">${dateStr}</div>
+        <div class="meta">${metaStr}</div>
       </div>
       <div class="amount">${e.type==="expense"?"−":"+"}${fmt(e.amount)} ₽</div>
     </div>`;
@@ -525,6 +543,7 @@ function openEditModal(id){
   if(!entry) return;
   state.editingId = id;
   el("editType").value = entry.type;
+  el("editEmployee").value = entry.employee || "";
   fillCategorySelect(el("editCategory"), entry.type, false);
   el("editCategory").value = entry.category;
   el("editAmount").value = entry.amount;
@@ -538,6 +557,7 @@ el("btnEditSave").onclick = async ()=>{
   const entry = state.entries.find(e=>e.id===state.editingId);
   if(!entry) return;
   entry.type = el("editType").value;
+  entry.employee = el("editEmployee").value.trim();
   entry.category = el("editCategory").value;
   entry.amount = parseFloat(el("editAmount").value) || entry.amount;
   entry.comment = el("editComment").value.trim();
@@ -545,7 +565,7 @@ el("btnEditSave").onclick = async ()=>{
   saveEntries(); renderEntries(); renderTotals();
   el("editModalBackdrop").style.display="none";
   try{
-    await sendToServer({ action:"edit", id:entry.id, type:entry.type, category:entry.category, amount:entry.amount, comment:entry.comment });
+    await sendToServer({ action:"edit", id:entry.id, type:entry.type, employee:entry.employee, category:entry.category, amount:entry.amount, comment:entry.comment });
     entry.status = "synced";
   }catch(e){ entry.status="error"; el("btnRetry").style.display="inline"; }
   saveEntries(); renderEntries();
@@ -566,9 +586,9 @@ el("btnEditDelete").onclick = async ()=>{
 
 el("exportCsv").onclick = (e)=>{
   e.preventDefault();
-  const rows = [["Дата","Тип","Статья","Сумма","Комментарий"]];
+  const rows = [["Дата","Тип","Сотрудник","Статья","Сумма","Комментарий"]];
   state.entries.filter(x=>!x.deleted).forEach(en=>{
-    rows.push([en.timestamp, en.type==="income"?"Доход":"Расход", en.category, en.amount, en.comment||""]);
+    rows.push([en.timestamp, en.type==="income"?"Доход":"Расход", en.employee||"", en.category, en.amount, en.comment||""]);
   });
   const csv = rows.map(r=> r.map(v=> `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
   const blob = new Blob(["\ufeff"+csv], {type:"text/csv;charset=utf-8"});
