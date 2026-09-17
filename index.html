@@ -6,105 +6,131 @@
 <title>ДДС</title>
 <style>
   :root{
-    --bg:#0f1115;
-    --card:#171a21;
-    --card2:#1e222b;
-    --border:#2a2f3a;
-    --text:#eef0f3;
-    --muted:#8b92a3;
-    --income:#2fbf71;
-    --income-dark:#1e8a52;
-    --expense:#ef4a4a;
-    --expense-dark:#b93636;
-    --accent:#4a8cef;
-    --radius:14px;
+    --bg:#f1f1f5;
+    --card:#ffffff;
+    --card-dark:#15161b;
+    --border:#e6e6ec;
+    --text:#15161b;
+    --muted:#8b8f9c;
+    --income:#1fae63;
+    --income-soft:rgba(31,174,99,.12);
+    --expense:#e2483d;
+    --expense-soft:rgba(226,72,61,.12);
+    --transfer:#3d6ae2;
+    --transfer-soft:rgba(61,106,226,.12);
+    --accent:#3d6ae2;
+    --radius:20px;
+    --radius-sm:14px;
+    --shadow:0 1px 2px rgba(20,20,30,.05), 0 8px 20px rgba(20,20,30,.06);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   body{
     margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     background:var(--bg); color:var(--text); padding-bottom:40px;
   }
-  header{
-    padding:18px 16px 10px; position:sticky; top:0; background:var(--bg); z-index:5;
-    border-bottom:1px solid var(--border);
-  }
-  .header-top{display:flex; align-items:center; justify-content:space-between;}
-  .employee-display{font-size:18px; font-weight:700; padding:2px 0;}
+  button, input, select, textarea{ font-family:inherit; }
+  button{ cursor:pointer; transition: transform .15s ease, background-color .2s ease, border-color .2s ease, color .2s ease, opacity .2s ease; }
+  button:active{ transform:scale(.96); }
+
+  header{ padding:16px 16px 10px; position:sticky; top:0; background:var(--bg); z-index:5; }
+  .header-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .employee-display{font-size:17px; font-weight:700; padding:2px 0; cursor:pointer;}
   .employee-display .hint{font-size:11px; color:var(--muted); font-weight:400; display:block; margin-top:1px;}
-  .refresh-btn{background:none; border:none; color:var(--muted); font-size:13px; padding:4px 8px;}
+  .refresh-btn{background:var(--card); border:1px solid var(--border); color:var(--text); font-size:12px; padding:7px 12px; border-radius:999px; box-shadow:var(--shadow);}
   .refresh-btn.spinning{opacity:.5;}
-  .sync-meta{font-size:11px; color:var(--muted); margin-top:2px;}
-  .balance-row{display:flex; gap:10px; margin-top:12px;}
-  .balance-card{flex:1; background:var(--card); border-radius:var(--radius); padding:10px 12px;}
-  .balance-card .label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
-  .balance-card .value{font-size:18px; font-weight:700; margin-top:2px;}
-  .balance-card.income .value{color:var(--income);}
-  .balance-card.expense .value{color:var(--expense);}
-  .balance-card.total .value{color:var(--accent);}
+  .sync-meta{font-size:11px; color:var(--muted); margin-top:6px;}
 
-  main{padding:14px 16px;}
-
-  .type-toggle{display:flex; gap:8px; margin-bottom:14px;}
-  .type-btn{
-    flex:1; padding:14px; border-radius:var(--radius); border:2px solid var(--border);
-    background:var(--card); color:var(--muted); font-size:15px; font-weight:600; text-align:center;
+  .wallet-strip{display:flex; gap:10px; overflow-x:auto; padding:12px 2px 4px; -webkit-overflow-scrolling:touch;}
+  .wallet-strip::-webkit-scrollbar{display:none;}
+  .wallet-chip{
+    flex:0 0 auto; min-width:128px; background:var(--card); border:2px solid var(--border);
+    border-radius:var(--radius-sm); padding:10px 14px; box-shadow:var(--shadow);
+    transition: transform .15s ease, border-color .2s ease, background-color .2s ease;
   }
-  .type-btn.active.income{border-color:var(--income); color:var(--income); background:rgba(47,191,113,.1);}
-  .type-btn.active.expense{border-color:var(--expense); color:var(--expense); background:rgba(239,74,74,.1);}
+  .wallet-chip:active{ transform:scale(.96); }
+  .wallet-chip.selected{ border-color:var(--accent); background:var(--transfer-soft); }
+  .wallet-chip .wname{font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:150px;}
+  .wallet-chip .wbalance{font-size:15px; font-weight:800; margin-top:3px; display:inline-block;}
+  .wallet-chip .wcur{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-left:4px;}
+  @keyframes pulseScale{ 0%{transform:scale(1);} 35%{transform:scale(1.08);} 100%{transform:scale(1);} }
+  .wallet-chip.pulse .wbalance{ animation: pulseScale .45s ease; display:inline-block; }
+  .wallet-hint{font-size:11px; color:var(--muted); padding:0 2px 4px;}
+
+  main{padding:6px 16px 14px;}
+
+  .type-toggle{display:flex; gap:8px; margin-bottom:14px; align-items:center;}
+  .type-btn{
+    flex:1; padding:14px; border-radius:999px; border:2px solid var(--border);
+    background:var(--card); color:var(--muted); font-size:14px; font-weight:700; text-align:center;
+    box-shadow:var(--shadow);
+  }
+  .type-btn.active.income{border-color:var(--income); color:var(--income); background:var(--income-soft);}
+  .type-btn.active.expense{border-color:var(--expense); color:var(--expense); background:var(--expense-soft);}
+  .type-btn.transfer{ flex:0 0 auto; width:50px; height:50px; border-radius:50%; padding:0; font-size:18px; display:flex; align-items:center; justify-content:center;}
+  .type-btn.transfer.active{ border-color:var(--transfer); color:#fff; background:var(--transfer); }
 
   .field{margin-bottom:14px;}
   .field label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.03em;}
   .field label .req{color:var(--expense); margin-left:2px;}
   select, input[type=number], input[type=text], textarea{
     width:100%; padding:14px; border-radius:12px; border:1px solid var(--border);
-    background:var(--card2); color:var(--text); font-size:16px; appearance:none; -webkit-appearance:none;
+    background:var(--card); color:var(--text); font-size:16px; appearance:none; -webkit-appearance:none;
+    box-shadow:var(--shadow);
   }
-  select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238b92a3' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>"); background-repeat:no-repeat; background-position:right 14px center;}
-  textarea{resize:vertical; min-height:60px; font-family:inherit;}
+  select:disabled, input:disabled{ opacity:.55; }
+  select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238b8f9c' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>"); background-repeat:no-repeat; background-position:right 14px center;}
+  textarea{resize:vertical; min-height:56px; font-family:inherit;}
 
-  .amount-input{font-size:26px; font-weight:700; text-align:center;}
+  .amount-input{font-size:26px; font-weight:800; text-align:center;}
+
+  .transfer-row{display:flex; align-items:center; gap:8px;}
+  .transfer-row .field{flex:1; margin-bottom:0;}
+  .transfer-arrow{color:var(--muted); font-size:18px; padding-top:18px;}
 
   .photo-field{display:flex; gap:10px;}
   .photo-btn{
-    flex:1; padding:16px 8px; border-radius:12px; border:1px dashed var(--border);
-    background:var(--card2); color:var(--muted); font-size:14px; font-weight:600;
+    flex:1; padding:16px 8px; border-radius:12px; border:1.5px dashed var(--border);
+    background:var(--card); color:var(--muted); font-size:14px; font-weight:600;
   }
   .photo-preview{position:relative; width:100%;}
-  .photo-preview img{width:100%; border-radius:12px; display:block; max-height:240px; object-fit:cover;}
+  .photo-preview img{width:100%; border-radius:12px; display:block; max-height:220px; object-fit:cover;}
   .photo-remove{
-    position:absolute; top:8px; right:8px; background:rgba(0,0,0,.6); color:#fff; border:none;
+    position:absolute; top:8px; right:8px; background:rgba(0,0,0,.55); color:#fff; border:none;
     border-radius:50%; width:30px; height:30px; font-size:16px;
   }
 
   .submit-btn{
-    width:100%; padding:16px; border:none; border-radius:var(--radius); font-size:16px; font-weight:700;
-    color:#fff; margin-top:6px;
+    width:100%; padding:16px; border:none; border-radius:999px; font-size:16px; font-weight:800;
+    color:#fff; margin-top:6px; box-shadow:var(--shadow);
   }
   .submit-btn.income{background:var(--income);}
   .submit-btn.expense{background:var(--expense);}
+  .submit-btn.transfer{background:var(--transfer);}
   .submit-btn:disabled{opacity:.5;}
 
   .sync-status{font-size:12px; text-align:center; margin-top:8px; color:var(--muted); min-height:16px;}
-  .sync-status.pending{color:#e0a63c;}
+  .sync-status.pending{color:#c98a1f;}
   .sync-status.error{color:var(--expense);}
   .sync-status.ok{color:var(--income);}
 
-  .section-title{font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin:22px 0 10px; display:flex; justify-content:space-between; align-items:center;}
-  .section-title button{background:none; border:none; color:var(--accent); font-size:12px; padding:0;}
+  .section-title{font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin:20px 0 10px; display:flex; justify-content:space-between; align-items:center;}
+  .section-title button{background:none; border:none; color:var(--accent); font-size:12px; padding:0; box-shadow:none;}
 
+  @keyframes entryIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
   .entry{
-    background:var(--card); border-radius:12px; padding:12px 14px; margin-bottom:8px;
-    display:flex; align-items:center; gap:10px;
+    background:var(--card); border-radius:14px; padding:12px 14px; margin-bottom:8px;
+    display:flex; align-items:center; gap:10px; box-shadow:var(--shadow);
+    animation: entryIn .25s ease; transition: transform .15s ease;
   }
+  .entry:active{ transform:scale(.985); }
   .entry .stripe{width:4px; align-self:stretch; border-radius:2px;}
   .entry.income .stripe{background:var(--income);}
   .entry.expense .stripe{background:var(--expense);}
-  .entry .thumb{width:42px; height:42px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--card2);}
   .entry .info{flex:1; min-width:0;}
-  .entry .title{font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .entry .title{font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .entry .cat{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .entry .meta{font-size:11px; color:var(--muted); margin-top:2px;}
-  .entry .amount{font-size:15px; font-weight:700; white-space:nowrap;}
+  .entry .amount{font-size:15px; font-weight:800; white-space:nowrap;}
   .entry.income .amount{color:var(--income);}
   .entry.expense .amount{color:var(--expense);}
   .entry .dot{width:6px; height:6px; border-radius:50%; display:inline-block; margin-left:4px;}
@@ -113,44 +139,40 @@
 
   .empty{text-align:center; color:var(--muted); font-size:14px; padding:30px 0;}
 
-  /* fullscreen camera */
   .camera-overlay{
     position:fixed; inset:0; background:#000; z-index:100; display:flex; flex-direction:column;
+    opacity:0; transition:opacity .2s ease;
   }
+  .camera-overlay.show{ opacity:1; }
   .camera-overlay video{flex:1; width:100%; object-fit:cover; background:#000;}
-  .camera-controls{
-    position:absolute; top:0; left:0; right:0; padding:16px; display:flex; justify-content:space-between;
-    z-index:2;
-  }
-  .camera-controls button{
-    background:rgba(0,0,0,.5); color:#fff; border:none; border-radius:50%; width:42px; height:42px; font-size:18px;
-  }
-  .camera-shutter-row{
-    position:absolute; bottom:26px; left:0; right:0; display:flex; justify-content:center; z-index:2;
-  }
-  .shutter{
-    width:70px; height:70px; border-radius:50%; background:#fff; border:4px solid rgba(255,255,255,.4);
-  }
+  .camera-controls{position:absolute; top:0; left:0; right:0; padding:16px; display:flex; justify-content:space-between; z-index:2;}
+  .camera-controls button{background:rgba(0,0,0,.5); color:#fff; border:none; border-radius:50%; width:42px; height:42px; font-size:18px; box-shadow:none;}
+  .camera-shutter-row{position:absolute; bottom:26px; left:0; right:0; display:flex; justify-content:center; z-index:2;}
+  .shutter{width:70px; height:70px; border-radius:50%; background:#fff; border:4px solid rgba(255,255,255,.4); box-shadow:none;}
 
   .modal-backdrop{
-    position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:90; display:flex; align-items:flex-end;
+    position:fixed; inset:0; background:rgba(20,20,30,0); z-index:90; display:flex; align-items:flex-end;
+    opacity:0; pointer-events:none; transition: background-color .25s ease, opacity .25s ease;
   }
+  .modal-backdrop.show{ opacity:1; pointer-events:auto; background:rgba(20,20,30,.55); }
   .modal{
-    background:var(--card); width:100%; border-radius:18px 18px 0 0; padding:18px 16px 26px; max-height:85vh; overflow:auto;
+    background:var(--card); width:100%; border-radius:22px 22px 0 0; padding:18px 16px 26px; max-height:85vh; overflow:auto;
+    transform:translateY(100%); transition: transform .3s cubic-bezier(.32,.72,0,1);
   }
+  .modal-backdrop.show .modal{ transform:translateY(0); }
   .modal h3{margin:0 0 14px;}
   .modal p{margin:0; font-size:14px; color:var(--muted);}
   .modal-actions{display:flex; gap:10px; margin-top:16px;}
-  .modal-actions button{flex:1; padding:13px; border-radius:10px; border:none; font-size:14px; font-weight:600;}
-  .btn-cancel{background:var(--card2); color:var(--text);}
+  .modal-actions button{flex:1; padding:13px; border-radius:10px; border:none; font-size:14px; font-weight:700; box-shadow:none;}
+  .btn-cancel{background:var(--bg); color:var(--text);}
   .btn-save{background:var(--accent); color:#fff;}
   .btn-delete{background:var(--expense); color:#fff;}
+  .transfer-hint{background:var(--transfer-soft); color:var(--transfer); border-radius:10px; padding:10px 12px; font-size:12px; margin-bottom:14px;}
 
   .toast{
-    position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--card2);
-    color:var(--text); padding:10px 18px; border-radius:20px; font-size:13px; z-index:200; border:1px solid var(--border);
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--card-dark);
+    color:#fff; padding:10px 18px; border-radius:20px; font-size:13px; z-index:200;
   }
-
 </style>
 </head>
 <body>
@@ -161,32 +183,45 @@
     <button class="refresh-btn" id="btnRefresh">Обновить</button>
   </div>
   <div class="sync-meta" id="syncMeta">Загрузка...</div>
-  <div class="balance-row">
-    <div class="balance-card income"><div class="label">Доход</div><div class="value" id="sumIncome">0</div></div>
-    <div class="balance-card expense"><div class="label">Расход</div><div class="value" id="sumExpense">0</div></div>
-    <div class="balance-card total"><div class="label">Итого</div><div class="value" id="sumTotal">0</div></div>
-  </div>
+  <div class="wallet-strip" id="walletStrip"></div>
+  <div class="wallet-hint">Кошельки и их валюта редактируются в листе «Кошельки» таблицы</div>
 </header>
 
 <main>
 
   <div class="type-toggle">
-    <button class="type-btn income active" id="btnIncome">Доход</button>
+    <button class="type-btn income active" id="btnIncome">Приход</button>
+    <button class="type-btn transfer" id="btnTransfer">⇄</button>
     <button class="type-btn expense" id="btnExpense">Расход</button>
   </div>
 
-  <div class="field">
-    <label>Наименование<span class="req">*</span></label>
-    <input type="text" id="title" placeholder="Например: Оплата аренды за март" enterkeyhint="next">
+  <div id="normalFields">
+    <div class="field">
+      <label>Наименование<span class="req">*</span></label>
+      <input type="text" id="title" placeholder="Например: Оплата аренды за март" enterkeyhint="next">
+    </div>
+    <div class="field">
+      <label>Статья</label>
+      <select id="category"></select>
+    </div>
+  </div>
+
+  <div id="transferFields" style="display:none;">
+    <div class="transfer-row">
+      <div class="field">
+        <label>Откуда</label>
+        <select id="transferFrom"></select>
+      </div>
+      <div class="transfer-arrow">→</div>
+      <div class="field">
+        <label>Куда</label>
+        <select id="transferTo"></select>
+      </div>
+    </div>
   </div>
 
   <div class="field">
-    <label>Статья</label>
-    <select id="category"></select>
-  </div>
-
-  <div class="field">
-    <label>Сумма, ₽<span class="req">*</span></label>
+    <label id="amountLabel">Сумма, ₽<span class="req">*</span></label>
     <input type="number" inputmode="decimal" id="amount" class="amount-input" placeholder="0" enterkeyhint="done">
   </div>
 
@@ -195,7 +230,7 @@
     <textarea id="comment" placeholder="Например: чек №..., контрагент, назначение"></textarea>
   </div>
 
-  <div class="field">
+  <div class="field" id="photoFieldWrapper">
     <label>Фото чека (необязательно)</label>
     <div id="photoArea">
       <div class="photo-field">
@@ -206,7 +241,7 @@
     <input type="file" id="galleryInput" accept="image/*" style="display:none">
   </div>
 
-  <button class="submit-btn income" id="btnSubmit">Добавить доход</button>
+  <button class="submit-btn income" id="btnSubmit">Добавить приход</button>
   <div class="sync-status" id="syncStatus"></div>
 
   <div class="section-title">
@@ -232,10 +267,13 @@
 <div id="editModalBackdrop" class="modal-backdrop" style="display:none;">
   <div class="modal">
     <h3>Редактировать запись</h3>
+    <div class="transfer-hint" id="editTransferHint" style="display:none;">
+      Это часть перевода между кошельками — сумма и комментарий синхронизируются со второй стороной перевода автоматически.
+    </div>
     <div class="field">
       <label>Тип</label>
       <select id="editType">
-        <option value="income">Доход</option>
+        <option value="income">Приход</option>
         <option value="expense">Расход</option>
       </select>
     </div>
@@ -246,6 +284,10 @@
     <div class="field">
       <label>Статья</label>
       <select id="editCategory"></select>
+    </div>
+    <div class="field">
+      <label>Кошелёк</label>
+      <select id="editWallet"></select>
     </div>
     <div class="field">
       <label>Сумма, ₽</label>
@@ -271,7 +313,7 @@
 <div id="confirmDeleteBackdrop" class="modal-backdrop" style="display:none;">
   <div class="modal">
     <h3>Удалить запись?</h3>
-    <p>Это действие нельзя отменить — запись будет удалена и из таблицы.</p>
+    <p id="confirmDeleteText">Это действие нельзя отменить — запись будет удалена и из таблицы.</p>
     <div class="modal-actions">
       <button class="btn-cancel" id="btnConfirmDeleteCancel">Отмена</button>
       <button class="btn-delete" id="btnConfirmDeleteOk">Удалить</button>
@@ -297,45 +339,46 @@
 /* ======================= НАСТРОЙКИ ======================= */
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcGRHM_6KHUJoySM4dU0xkfSzoWKZH7D9JVt987ollOwQl7wz0T8wlEGIk1sYSifM/exec";
-
-// Секретный токен — должен совпадать с TOKEN в Apps Script (apps_script_code.gs).
-// Это простая защита от случайного/бездумного обращения к URL, а не полноценная
-// авторизация: любой, кто откроет исходный код этого файла, может увидеть токен.
-// Держите ссылку на приложение и сам файл вне публичного доступа.
 const API_TOKEN = "HpR5SMj11iYfuh6apsMQETU-JOOhCkg3";
-
-// Через сколько мс считать неподтверждённую отправку сбоем и предлагать повтор
 const UNCONFIRMED_TIMEOUT_MS = 90000;
+const REFRESH_INTERVAL_MS = 30000;
 
-// Список статей по умолчанию — используется только пока не загрузились
-// актуальные статьи из листа "Статьи" в Google Таблице, и как офлайн-запас.
-// Создавать/редактировать статьи лучше прямо в этом листе таблицы.
 const DEFAULT_CATEGORIES = {
   income: ["Продажа билетов", "Аренда зала", "Кейтеринг", "Прочие доходы"],
   expense: ["Аренда", "Зарплата", "Коммунальные услуги", "Закупки", "Реклама", "Транспорт", "Прочее"]
 };
-
-const REFRESH_INTERVAL_MS = 30000;
+const DEFAULT_WALLETS = [{ name: "Касса", currency: "RUB" }];
+const CURRENCY_SYMBOLS = { RUB:"₽", USD:"$", EUR:"€", THB:"฿" };
+function currencySymbol(code){ return CURRENCY_SYMBOLS[code] || code || ""; }
 
 /* ============================================================================ */
+
+const EMPLOYEE_KEY = "dds_employee_name";
+const WALLET_KEY = "dds_selected_wallet";
 
 const state = {
   type: "income",
   photo: null,
   entries: [],
-  categories: null, // заполняется с сервера, иначе DEFAULT_CATEGORIES
+  categories: null,
+  wallets: null,
+  walletBalances: {},
+  lastBalances: {},
+  selectedWallet: null,
+  employeeName: "",
   editingId: null,
   deletingId: null,
   facingMode: "environment",
   stream: null,
-  refreshing: false
+  refreshing: false,
+  pendingStatusEntryId: null,
+  totalCount: null
 };
 
 const el = id => document.getElementById(id);
 
-function currentCategories(){
-  return state.categories || DEFAULT_CATEGORIES;
-}
+function currentCategories(){ return state.categories || DEFAULT_CATEGORIES; }
+function currentWallets(){ return state.wallets || DEFAULT_WALLETS; }
 
 function fillCategorySelect(select, type, keepValue){
   const prev = keepValue ? select.value : null;
@@ -349,28 +392,91 @@ function fillCategorySelect(select, type, keepValue){
   if(prev && list.includes(prev)) select.value = prev;
 }
 
+function fillWalletOptions(select){
+  select.innerHTML = currentWallets().map(w=>
+    `<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)} (${w.currency})</option>`
+  ).join("");
+}
+
+/* ---------- Модалки: показ/скрытие с анимацией ---------- */
+
+function showModal(id){
+  const node = el(id);
+  node.style.display = "flex";
+  requestAnimationFrame(()=> node.classList.add("show"));
+}
+function hideModal(id){
+  const node = el(id);
+  node.classList.remove("show");
+  setTimeout(()=>{ if(!node.classList.contains("show")) node.style.display="none"; }, 260);
+}
+
+/* ---------- Тип операции ---------- */
+
 function setType(type){
   state.type = type;
   el("btnIncome").classList.toggle("active", type==="income");
   el("btnExpense").classList.toggle("active", type==="expense");
-  el("btnSubmit").className = "submit-btn " + type;
-  el("btnSubmit").textContent = type==="income" ? "Добавить доход" : "Добавить расход";
-  fillCategorySelect(el("category"), type, false);
+  el("btnTransfer").classList.toggle("active", type==="transfer");
+
+  const isTransfer = type === "transfer";
+  el("normalFields").style.display = isTransfer ? "none" : "";
+  el("transferFields").style.display = isTransfer ? "" : "none";
+  el("photoFieldWrapper").style.display = isTransfer ? "none" : "";
+
+  if(isTransfer){
+    el("btnSubmit").className = "submit-btn transfer";
+    el("btnSubmit").textContent = "Перевести";
+    fillTransferWallets();
+  } else {
+    fillCategorySelect(el("category"), type, false);
+    el("btnSubmit").className = "submit-btn " + type;
+    el("btnSubmit").textContent = type==="income" ? "Добавить приход" : "Добавить расход";
+  }
+  updateAmountLabel();
 }
 
 el("btnIncome").onclick = ()=>{ setType("income"); el("title").focus(); };
 el("btnExpense").onclick = ()=>{ setType("expense"); el("title").focus(); };
+el("btnTransfer").onclick = ()=> setType("transfer");
+
+function updateAmountLabel(){
+  let code = "RUB";
+  if(state.type === "transfer"){
+    const fromName = el("transferFrom").value;
+    const w = currentWallets().find(w=>w.name===fromName);
+    if(w) code = w.currency;
+  } else {
+    const w = currentWallets().find(w=>w.name===state.selectedWallet);
+    if(w) code = w.currency;
+  }
+  el("amountLabel").innerHTML = "Сумма, " + currencySymbol(code) + '<span class="req">*</span>';
+}
+
+function fillTransferWallets(){
+  const fromSelect = el("transferFrom");
+  fillWalletOptions(fromSelect);
+  if(state.selectedWallet) fromSelect.value = state.selectedWallet;
+  updateTransferToOptions();
+  fromSelect.onchange = ()=>{ updateTransferToOptions(); updateAmountLabel(); };
+}
+function updateTransferToOptions(){
+  const fromName = el("transferFrom").value;
+  const fromWallet = currentWallets().find(w=>w.name===fromName);
+  const currency = fromWallet ? fromWallet.currency : null;
+  const options = currentWallets().filter(w=> w.name!==fromName && (!currency || w.currency===currency));
+  el("transferTo").innerHTML = options.length
+    ? options.map(w=>`<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)}</option>`).join("")
+    : `<option value="">Нет подходящих кошельков</option>`;
+}
 
 /* ---------- Имя сотрудника: спрашиваем один раз при первом запуске ---------- */
-
-const EMPLOYEE_KEY = "dds_employee_name";
 
 function updateEmployeeDisplay(){
   el("employeeDisplay").innerHTML = state.employeeName
     ? escapeHtml(state.employeeName) + '<span class="hint">нажмите, чтобы сменить</span>'
     : "Сотрудник";
 }
-
 function openEmployeeModal(mandatory){
   el("employeeModalTitle").textContent = mandatory ? "Как вас зовут?" : "Сменить сотрудника";
   el("employeeModalHint").textContent = mandatory
@@ -378,32 +484,60 @@ function openEmployeeModal(mandatory){
     : "Изменится имя, которое сохраняется в записях с этого телефона.";
   el("employeeNameInput").value = state.employeeName || "";
   el("btnEmployeeCancel").style.display = mandatory ? "none" : "inline";
-  el("employeeBackdrop").style.display = "flex";
-  state.employeeModalMandatory = mandatory;
+  showModal("employeeBackdrop");
 }
 el("employeeDisplay").onclick = ()=> openEmployeeModal(false);
-el("btnEmployeeCancel").onclick = ()=>{ el("employeeBackdrop").style.display = "none"; };
+el("btnEmployeeCancel").onclick = ()=> hideModal("employeeBackdrop");
 el("btnEmployeeSave").onclick = ()=>{
   const name = el("employeeNameInput").value.trim();
   if(!name){ showToast("Введите имя"); return; }
   state.employeeName = name;
   localStorage.setItem(EMPLOYEE_KEY, name);
   updateEmployeeDisplay();
-  el("employeeBackdrop").style.display = "none";
+  hideModal("employeeBackdrop");
 };
 
-state.employeeName = localStorage.getItem(EMPLOYEE_KEY) || "";
-updateEmployeeDisplay();
-if(!state.employeeName) openEmployeeModal(true);
+/* ---------- Кошельки: отрисовка полосы кошельков ---------- */
 
-/* Enter на клавиатуре ведёт по полям и отправляет запись без необходимости
-   видеть кнопку "Добавить" — она может быть скрыта клавиатурой на телефоне */
-el("title").addEventListener("keydown", (e)=>{
-  if(e.key === "Enter"){ e.preventDefault(); el("amount").focus(); }
-});
-el("amount").addEventListener("keydown", (e)=>{
-  if(e.key === "Enter"){ e.preventDefault(); el("amount").blur(); submitEntry(); }
-});
+function computeWalletBalance(name){
+  const server = state.walletBalances[name];
+  let inc = server ? server.income : 0;
+  let exp = server ? server.expense : 0;
+  state.entries.forEach(e=>{
+    if(e.deleted || e.status === "synced") return;
+    if(e.wallet !== name) return;
+    if(e.type === "income") inc += e.amount; else exp += e.amount;
+  });
+  return inc - exp;
+}
+
+function renderWalletStrip(){
+  const wallets = currentWallets();
+  if(!state.selectedWallet || !wallets.some(w=>w.name===state.selectedWallet)){
+    state.selectedWallet = wallets[0] ? wallets[0].name : null;
+  }
+  const wrap = el("walletStrip");
+  const newBalances = {};
+  wrap.innerHTML = wallets.map(w=>{
+    const bal = computeWalletBalance(w.name);
+    newBalances[w.name] = bal;
+    const changed = state.lastBalances[w.name] !== undefined && state.lastBalances[w.name] !== bal;
+    const selected = state.selectedWallet === w.name ? "selected" : "";
+    return `<div class="wallet-chip ${selected} ${changed?'pulse':''}" data-wallet="${escapeHtml(w.name)}">
+      <div class="wname">${escapeHtml(w.name)}</div>
+      <div><span class="wbalance">${fmt(bal)}</span><span class="wcur">${w.currency}</span></div>
+    </div>`;
+  }).join("");
+  state.lastBalances = newBalances;
+  wrap.querySelectorAll(".wallet-chip").forEach(node=>{
+    node.onclick = ()=>{
+      state.selectedWallet = node.getAttribute("data-wallet");
+      localStorage.setItem(WALLET_KEY, state.selectedWallet);
+      renderWalletStrip();
+      updateAmountLabel();
+    };
+  });
+}
 
 /* ---------- Фото: камера ---------- */
 
@@ -420,7 +554,6 @@ el("galleryInput").onchange = (e)=>{
   reader.onload = ()=> setPhoto(reader.result, file.type);
   reader.readAsDataURL(file);
 };
-
 el("editGalleryInput").onchange = (e)=>{
   const file = e.target.files[0];
   if(!file) return;
@@ -436,11 +569,11 @@ el("editGalleryInput").onchange = (e)=>{
 
 async function openCamera(target){
   state.cameraTarget = target || "add";
-  el("cameraOverlay").style.display = "flex";
+  const overlay = el("cameraOverlay");
+  overlay.style.display = "flex";
+  requestAnimationFrame(()=> overlay.classList.add("show"));
   try{
-    state.stream = await navigator.mediaDevices.getUserMedia({
-      video:{ facingMode: state.facingMode }, audio:false
-    });
+    state.stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode: state.facingMode }, audio:false });
     el("cameraVideo").srcObject = state.stream;
   }catch(err){
     showToast("Нет доступа к камере");
@@ -448,7 +581,9 @@ async function openCamera(target){
   }
 }
 function closeCamera(){
-  el("cameraOverlay").style.display = "none";
+  const overlay = el("cameraOverlay");
+  overlay.classList.remove("show");
+  setTimeout(()=>{ overlay.style.display = "none"; }, 200);
   if(state.stream){ state.stream.getTracks().forEach(t=>t.stop()); state.stream=null; }
 }
 el("btnCameraClose").onclick = closeCamera;
@@ -497,7 +632,6 @@ function renderPhotoArea(){
     bindPhotoButtons();
   }
 }
-
 function renderEditPhotoArea(){
   const area = el("editPhotoArea");
   const previewSrc = state.editPhoto ? state.editPhoto.dataUrl : state.editPhotoUrl;
@@ -508,9 +642,7 @@ function renderEditPhotoArea(){
         <button type="button" class="photo-remove" id="btnEditRemovePhoto">✕</button>
       </div>`;
     el("btnEditRemovePhoto").onclick = ()=>{
-      state.editPhoto = null;
-      state.editPhotoUrl = null;
-      state.editPhotoChanged = true;
+      state.editPhoto = null; state.editPhotoUrl = null; state.editPhotoChanged = true;
       renderEditPhotoArea();
     };
   } else {
@@ -526,49 +658,27 @@ function renderEditPhotoArea(){
 
 /* ---------- Хранение ---------- */
 
-function loadEntries(){
-  try{
-    state.entries = JSON.parse(localStorage.getItem("dds_entries") || "[]");
-  }catch(e){ state.entries = []; }
-}
-function saveEntries(){
-  localStorage.setItem("dds_entries", JSON.stringify(state.entries));
-}
-function loadCategoriesCache(){
-  try{
-    const cached = JSON.parse(localStorage.getItem("dds_categories_cache") || "null");
-    if(cached) state.categories = cached;
-  }catch(e){}
-}
-function saveCategoriesCache(){
-  if(state.categories) localStorage.setItem("dds_categories_cache", JSON.stringify(state.categories));
-}
+function loadEntries(){ try{ state.entries = JSON.parse(localStorage.getItem("dds_entries")||"[]"); }catch(e){ state.entries=[]; } }
+function saveEntries(){ localStorage.setItem("dds_entries", JSON.stringify(state.entries)); }
+function loadCategoriesCache(){ try{ const c = JSON.parse(localStorage.getItem("dds_categories_cache")||"null"); if(c) state.categories=c; }catch(e){} }
+function saveCategoriesCache(){ if(state.categories) localStorage.setItem("dds_categories_cache", JSON.stringify(state.categories)); }
+function loadWalletsCache(){ try{ const w = JSON.parse(localStorage.getItem("dds_wallets_cache")||"null"); if(w) state.wallets=w; }catch(e){} }
+function saveWalletsCache(){ if(state.wallets) localStorage.setItem("dds_wallets_cache", JSON.stringify(state.wallets)); }
 
-function uid(){
-  return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
-}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 
-/* ---------- Отправка на сервер (запись) ---------- */
+/* ---------- Отправка на сервер ---------- */
 
 async function sendToServer(payload){
-  if(!SCRIPT_URL || SCRIPT_URL.indexOf("PASTE_") === 0){
-    throw new Error("no_url");
-  }
+  if(!SCRIPT_URL || SCRIPT_URL.indexOf("PASTE_") === 0) throw new Error("no_url");
   const body = Object.assign({ token: API_TOKEN }, payload);
-  // Ответ Apps Script на POST часто нечитаем в браузере из-за редиректа
-  // на другой домен (CORS), хотя сама запись уже успешно прошла на сервере.
-  // Поэтому отправляем в режиме no-cors: реальные сетевые сбои (нет
-  // интернета, неверный URL) всё ещё будут пойманы как ошибка.
   await fetch(SCRIPT_URL, {
-    method:"POST",
-    mode:"no-cors",
+    method:"POST", mode:"no-cors",
     headers:{ "Content-Type":"text/plain;charset=utf-8" },
     body: JSON.stringify(body)
   });
   return { ok:true };
 }
-
-/* ---------- Чтение с сервера (двусторонняя синхронизация) ---------- */
 
 async function fetchFromServer(){
   const url = SCRIPT_URL + (SCRIPT_URL.indexOf("?")===-1 ? "?" : "&") + "action=bootstrap&token=" + encodeURIComponent(API_TOKEN) + "&_=" + Date.now();
@@ -580,16 +690,12 @@ async function fetchFromServer(){
 
 function mapRemoteRow(r){
   return {
-    id: String(r.id),
-    timestamp: r.timestamp,
-    type: r.type === "Доход" ? "income" : "expense",
-    employee: r.employee || "",
-    title: r.title || "",
-    category: r.category || "",
-    amount: Number(r.amount) || 0,
-    comment: r.comment || "",
-    photo: null,
-    photoUrl: r.photoUrl || null,
+    id: String(r.id), timestamp: r.timestamp,
+    type: (r.type === "Приход" || r.type === "Доход") ? "income" : "expense",
+    employee: r.employee||"", title: r.title||"", category: r.category||"",
+    wallet: r.wallet||"", currency: r.currency||"RUB",
+    amount: Number(r.amount)||0, comment: r.comment||"",
+    photo: null, photoUrl: r.photoUrl||null, transferId: r.transferId||null,
     status: "synced"
   };
 }
@@ -598,21 +704,19 @@ function reconcileWithRemote(data){
   if(data.categories){
     state.categories = data.categories;
     saveCategoriesCache();
-    fillCategorySelect(el("category"), state.type, true);
+    if(state.type !== "transfer") fillCategorySelect(el("category"), state.type, true);
   }
-  if(data.totals) state.remoteTotals = data.totals;
+  if(data.wallets){
+    state.wallets = data.wallets;
+    saveWalletsCache();
+  }
+  if(data.walletBalances) state.walletBalances = data.walletBalances;
   if(typeof data.totalCount === "number") state.totalCount = data.totalCount;
+
   if(data.rows){
     const remoteEntries = data.rows.map(mapRemoteRow);
     const remoteIds = new Set(remoteEntries.map(e=>e.id));
-    // локальные записи, которых ещё нет на сервере (только что отправлены/не отправились)
-    // сохраняем только записи, которые ещё не подтверждены сервером (только что
-    // добавлены/редактируются локально) — если запись УЖЕ была подтверждена
-    // ("synced"), а сейчас её нет среди строк с сервера, значит её удалили
-    // прямо в таблице, и она не должна "воскресать" в приложении
     const localOnly = state.entries.filter(e => !remoteIds.has(e.id) && !e.deleted && e.status !== "synced");
-    // если отправка "pending" не подтвердилась сервером слишком долго — считаем сбоем,
-    // чтобы запись не выглядела вечно "в ожидании" и её можно было отправить повторно
     localOnly.forEach(e=>{
       if(e.status === "pending" && e.sentAt && (Date.now() - e.sentAt) > UNCONFIRMED_TIMEOUT_MS){
         e.status = "error";
@@ -623,8 +727,6 @@ function reconcileWithRemote(data){
         }
       }
     });
-    // если запись, о которой сейчас написано "ждём подтверждения", появилась
-    // среди подтверждённых с сервера — обновляем надпись, чтобы она не "зависала"
     if(state.pendingStatusEntryId && remoteIds.has(state.pendingStatusEntryId)){
       setSyncStatus("Сохранено", "ok");
       state.pendingStatusEntryId = null;
@@ -633,8 +735,15 @@ function reconcileWithRemote(data){
     saveEntries();
     if(state.entries.some(e=>e.status==="error")) el("btnRetry").style.display="inline";
   }
+  renderWalletStrip();
   renderEntries();
-  renderTotals();
+  updateAmountLabel();
+}
+
+function updateSyncMetaTimestamp(){
+  const time = "Обновлено " + new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+  const count = state.totalCount != null ? " · всего записей: " + state.totalCount.toLocaleString("ru-RU") : "";
+  el("syncMeta").textContent = time + count;
 }
 
 async function refreshFromServer(manual){
@@ -653,16 +762,20 @@ async function refreshFromServer(manual){
 }
 el("btnRefresh").onclick = ()=> refreshFromServer(true);
 
-function updateSyncMetaTimestamp(){
-  const time = "Обновлено " + new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
-  const count = state.totalCount != null ? " · всего записей: " + state.totalCount.toLocaleString("ru-RU") : "";
-  el("syncMeta").textContent = time + count;
-}
-
 /* ---------- Добавление записи ---------- */
 
 function validateForm(){
   if(!state.employeeName){ openEmployeeModal(true); return false; }
+  if(state.type === "transfer"){
+    const from = el("transferFrom").value;
+    const to = el("transferTo").value;
+    if(!from || !to){ showToast("Выберите оба кошелька"); return false; }
+    if(from === to){ showToast("Кошельки должны отличаться"); return false; }
+    const amt = parseFloat(el("amount").value);
+    if(!amt || amt<=0){ showToast("Введите сумму"); return false; }
+    return true;
+  }
+  if(!state.selectedWallet){ showToast("Выберите кошелёк"); return false; }
   if(!el("title").value.trim()){ showToast("Укажите наименование"); return false; }
   const amountVal = parseFloat(el("amount").value);
   if(!amountVal || amountVal <= 0){ showToast("Введите сумму"); return false; }
@@ -671,55 +784,80 @@ function validateForm(){
 
 async function submitEntry(){
   if(!validateForm()) return;
+  if(state.type === "transfer"){ await submitTransfer(); return; }
 
+  const wallet = currentWallets().find(w=>w.name===state.selectedWallet);
   const entry = {
-    id: uid(),
-    timestamp: new Date().toISOString(),
-    type: state.type,
-    employee: state.employeeName,
-    title: el("title").value.trim(),
-    category: el("category").value,
-    amount: parseFloat(el("amount").value),
-    comment: el("comment").value.trim(),
-    photo: state.photo ? state.photo.dataUrl : null,
-    photoUrl: null,
-    status: "pending"
+    id: uid(), timestamp: new Date().toISOString(), type: state.type,
+    employee: state.employeeName, title: el("title").value.trim(),
+    category: el("category").value, wallet: state.selectedWallet,
+    currency: wallet ? wallet.currency : "RUB",
+    amount: parseFloat(el("amount").value), comment: el("comment").value.trim(),
+    photo: state.photo ? state.photo.dataUrl : null, photoUrl: null, status: "pending"
   };
 
   state.entries.unshift(entry);
-  saveEntries();
-  renderEntries();
-  renderTotals();
+  saveEntries(); renderEntries(); renderWalletStrip();
 
-  el("title").value = "";
-  el("amount").value = "";
-  el("comment").value = "";
-  state.photo = null;
-  renderPhotoArea();
+  el("title").value=""; el("amount").value=""; el("comment").value="";
+  state.photo = null; renderPhotoArea();
 
   await syncEntry(entry);
   refreshFromServer(false);
+}
+
+async function submitTransfer(){
+  const fromName = el("transferFrom").value;
+  const toName = el("transferTo").value;
+  const wallet = currentWallets().find(w=>w.name===fromName);
+  const currency = wallet ? wallet.currency : "RUB";
+  const amount = parseFloat(el("amount").value);
+  const comment = el("comment").value.trim();
+  const transferId = uid();
+  const ts = new Date().toISOString();
+
+  const outEntry = { id: transferId+"-out", timestamp: ts, type:"expense", employee: state.employeeName,
+    title:"Перевод → "+toName, category:"Перемещение", wallet: fromName, currency,
+    amount, comment, photo:null, photoUrl:null, status:"pending", transferId };
+  const inEntry = { id: transferId+"-in", timestamp: ts, type:"income", employee: state.employeeName,
+    title:"Перевод ← "+fromName, category:"Перемещение", wallet: toName, currency,
+    amount, comment, photo:null, photoUrl:null, status:"pending", transferId };
+
+  state.entries.unshift(outEntry, inEntry);
+  saveEntries(); renderEntries(); renderWalletStrip();
+  el("amount").value=""; el("comment").value="";
+
+  await sendTransfer(transferId, fromName, toName, amount, comment, ts, currency, outEntry, inEntry);
+  refreshFromServer(false);
+}
+
+async function sendTransfer(transferId, fromName, toName, amount, comment, ts, currency, outEntry, inEntry){
+  setSyncStatus("Отправка перевода...", "pending");
+  try{
+    await sendToServer({ action:"transfer", id:transferId, fromWallet:fromName, toWallet:toName, amount, comment, employee:state.employeeName, timestamp: ts, currency });
+    outEntry.status = "pending"; inEntry.status = "pending";
+    outEntry.sentAt = Date.now(); inEntry.sentAt = Date.now();
+    state.pendingStatusEntryId = outEntry.id;
+    setSyncStatus("Отправлено, ждём подтверждения", "pending");
+  }catch(err){
+    outEntry.status = "error"; inEntry.status = "error";
+    setSyncStatus("Не отправлено — сохранено локально", "error");
+    el("btnRetry").style.display = "inline";
+  }
+  saveEntries(); renderEntries();
 }
 
 async function syncEntry(entry){
   setSyncStatus("Отправка...", "pending");
   try{
     await sendToServer({
-      action:"add",
-      id: entry.id,
-      timestamp: entry.timestamp,
-      type: entry.type,
-      employee: entry.employee,
-      title: entry.title,
-      category: entry.category,
-      amount: entry.amount,
-      comment: entry.comment,
+      action:"add", id: entry.id, timestamp: entry.timestamp, type: entry.type,
+      employee: entry.employee, title: entry.title, category: entry.category,
+      wallet: entry.wallet, currency: entry.currency, amount: entry.amount, comment: entry.comment,
+      transferId: entry.transferId || null,
       photoBase64: entry.photo ? entry.photo.split(",")[1] : null,
       photoMime: entry.photo ? entry.photo.split(";")[0].split(":")[1] : null
     });
-    // no-cors не даёт прочитать ответ сервера, поэтому статус остаётся "pending"
-    // (отправлено, ждём подтверждения) — окончательно "synced" запись станет,
-    // когда появится в данных, полученных с сервера при обновлении.
     entry.status = "pending";
     entry.sentAt = Date.now();
     state.pendingStatusEntryId = entry.id;
@@ -735,9 +873,22 @@ async function syncEntry(entry){
 }
 
 function retryPending(){
-  const pending = state.entries.filter(e=> e.status !== "synced");
+  const pending = state.entries.filter(e=> e.status !== "synced" && !e.deleted);
   if(pending.length === 0){ el("btnRetry").style.display="none"; return; }
-  pending.forEach(e=> syncEntry(e).then(()=> refreshFromServer(false)));
+  const transferGroups = {};
+  pending.forEach(e=>{
+    if(e.transferId){ (transferGroups[e.transferId] = transferGroups[e.transferId]||[]).push(e); }
+    else { syncEntry(e).then(()=> refreshFromServer(false)); }
+  });
+  Object.keys(transferGroups).forEach(tid=>{
+    const legs = transferGroups[tid];
+    const out = legs.find(l=>l.id.endsWith("-out"));
+    const inn = legs.find(l=>l.id.endsWith("-in"));
+    if(out && inn){
+      sendTransfer(tid, out.wallet, inn.wallet, out.amount, out.comment, out.timestamp, out.currency, out, inn)
+        .then(()=> refreshFromServer(false));
+    }
+  });
 }
 el("btnRetry").onclick = retryPending;
 
@@ -745,32 +896,14 @@ function setSyncStatus(text, cls){
   const s = el("syncStatus");
   s.textContent = text;
   s.className = "sync-status " + (cls||"");
-  if(cls === "ok"){
-    setTimeout(()=>{ if(s.textContent===text) s.textContent=""; }, 2000);
-  }
+  if(cls === "ok"){ setTimeout(()=>{ if(s.textContent===text) s.textContent=""; }, 2000); }
 }
 
 el("btnSubmit").onclick = submitEntry;
 
-/* ---------- Отрисовка списка и итогов ---------- */
+/* ---------- Отрисовка списка записей ---------- */
 
-function renderTotals(){
-  let inc = state.remoteTotals ? state.remoteTotals.income : 0;
-  let exp = state.remoteTotals ? state.remoteTotals.expense : 0;
-  // серверные итоги уже включают всё подтверждённое; добавляем только то,
-  // что ещё не подтвердилось (только что добавлено/в процессе отправки),
-  // чтобы баланс обновлялся мгновенно, а не ждал следующего опроса
-  state.entries.forEach(e=>{
-    if(e.deleted || e.status === "synced") return;
-    if(e.type==="income") inc += e.amount; else exp += e.amount;
-  });
-  el("sumIncome").textContent = fmt(inc);
-  el("sumExpense").textContent = fmt(exp);
-  el("sumTotal").textContent = fmt(inc-exp);
-}
-function fmt(n){
-  return Math.round(n).toLocaleString("ru-RU");
-}
+function fmt(n){ return Math.round(n).toLocaleString("ru-RU"); }
 
 function renderEntries(){
   const list = el("entriesList");
@@ -783,7 +916,7 @@ function renderEntries(){
     const dot = e.status==="error" ? `<span class="dot error"></span>` : e.status==="pending" ? `<span class="dot pending"></span>` : "";
     const d = new Date(e.timestamp);
     const dateStr = d.toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"}) + " " + d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
-    const metaStr = [dateStr, e.employee].filter(Boolean).join(" · ");
+    const metaStr = [dateStr, e.employee, e.wallet].filter(Boolean).join(" · ");
     return `<div class="entry ${e.type}" data-id="${e.id}">
       <div class="stripe"></div>
       <div class="info">
@@ -791,7 +924,7 @@ function renderEntries(){
         <div class="cat">${escapeHtml(e.category)}</div>
         <div class="meta">${escapeHtml(metaStr)}</div>
       </div>
-      <div class="amount">${e.type==="expense"?"−":"+"}${fmt(e.amount)} ₽</div>
+      <div class="amount">${e.type==="expense"?"−":"+"}${fmt(e.amount)} ${currencySymbol(e.currency)}</div>
     </div>`;
   }).join("");
 
@@ -809,20 +942,38 @@ function openEditModal(id){
   const entry = state.entries.find(e=>e.id===id);
   if(!entry) return;
   state.editingId = id;
+  const isTransfer = !!entry.transferId;
+
   el("editType").value = entry.type;
+  el("editType").disabled = isTransfer;
   el("editTitle").value = entry.title || "";
-  fillCategorySelect(el("editCategory"), entry.type, false);
-  el("editCategory").value = entry.category;
+
+  if(isTransfer){
+    el("editCategory").innerHTML = `<option value="Перемещение">Перемещение</option>`;
+    el("editCategory").disabled = true;
+    el("editWallet").innerHTML = `<option value="${escapeHtml(entry.wallet)}">${escapeHtml(entry.wallet)}</option>`;
+    el("editWallet").disabled = true;
+    el("editTransferHint").style.display = "block";
+  } else {
+    fillCategorySelect(el("editCategory"), entry.type, false);
+    el("editCategory").value = entry.category;
+    el("editCategory").disabled = false;
+    fillWalletOptions(el("editWallet"));
+    el("editWallet").value = entry.wallet || "";
+    el("editWallet").disabled = false;
+    el("editTransferHint").style.display = "none";
+  }
+
   el("editAmount").value = entry.amount;
   el("editComment").value = entry.comment || "";
   state.editPhoto = entry.photo ? { dataUrl: entry.photo, mime: null } : null;
   state.editPhotoUrl = (!entry.photo && entry.photoUrl) ? entry.photoUrl : null;
   state.editPhotoChanged = false;
   renderEditPhotoArea();
-  el("editModalBackdrop").style.display = "flex";
+  showModal("editModalBackdrop");
 }
 el("editType").onchange = ()=> fillCategorySelect(el("editCategory"), el("editType").value, false);
-el("btnEditCancel").onclick = ()=> el("editModalBackdrop").style.display="none";
+el("btnEditCancel").onclick = ()=> hideModal("editModalBackdrop");
 
 el("btnEditSave").onclick = async ()=>{
   const entry = state.entries.find(e=>e.id===state.editingId);
@@ -830,53 +981,56 @@ el("btnEditSave").onclick = async ()=>{
   entry.type = el("editType").value;
   entry.title = el("editTitle").value.trim();
   entry.category = el("editCategory").value;
+  entry.wallet = el("editWallet").value;
   entry.amount = parseFloat(el("editAmount").value) || entry.amount;
   entry.comment = el("editComment").value.trim();
   entry.status = "pending";
 
-  const payload = { action:"edit", id:entry.id, type:entry.type, employee:entry.employee, title:entry.title, category:entry.category, amount:entry.amount, comment:entry.comment };
+  const payload = { action:"edit", id:entry.id, type:entry.type, employee:entry.employee, title:entry.title,
+    category:entry.category, wallet:entry.wallet, currency:entry.currency, amount:entry.amount, comment:entry.comment };
   if(state.editPhotoChanged){
     if(state.editPhoto){
       payload.photoBase64 = state.editPhoto.dataUrl.split(",")[1];
       payload.photoMime = state.editPhoto.mime || state.editPhoto.dataUrl.split(";")[0].split(":")[1];
-      entry.photo = state.editPhoto.dataUrl;
-      entry.photoUrl = null;
+      entry.photo = state.editPhoto.dataUrl; entry.photoUrl = null;
     } else {
-      payload.removePhoto = true;
-      entry.photo = null;
-      entry.photoUrl = null;
+      payload.removePhoto = true; entry.photo = null; entry.photoUrl = null;
     }
   }
 
-  saveEntries(); renderEntries(); renderTotals();
-  el("editModalBackdrop").style.display="none";
+  saveEntries(); renderEntries(); renderWalletStrip();
+  hideModal("editModalBackdrop");
   try{
     await sendToServer(payload);
-    entry.status = "pending";
-    entry.sentAt = Date.now();
+    entry.status = "pending"; entry.sentAt = Date.now();
   }catch(e){ entry.status="error"; el("btnRetry").style.display="inline"; }
   saveEntries(); renderEntries();
   refreshFromServer(false);
 };
 
 el("btnEditDelete").onclick = ()=>{
+  const entry = state.entries.find(e=>e.id===state.editingId);
+  el("confirmDeleteText").textContent = entry && entry.transferId
+    ? "Это часть перевода — удалятся обе стороны перевода, в обоих кошельках. Действие нельзя отменить."
+    : "Это действие нельзя отменить — запись будет удалена и из таблицы.";
   state.deletingId = state.editingId;
-  el("editModalBackdrop").style.display = "none";
-  el("confirmDeleteBackdrop").style.display = "flex";
+  hideModal("editModalBackdrop");
+  showModal("confirmDeleteBackdrop");
 };
-el("btnConfirmDeleteCancel").onclick = ()=>{
-  el("confirmDeleteBackdrop").style.display = "none";
-  state.deletingId = null;
-};
+el("btnConfirmDeleteCancel").onclick = ()=>{ hideModal("confirmDeleteBackdrop"); state.deletingId = null; };
 el("btnConfirmDeleteOk").onclick = async ()=>{
   const entry = state.entries.find(e=>e.id===state.deletingId);
-  el("confirmDeleteBackdrop").style.display = "none";
+  hideModal("confirmDeleteBackdrop");
   if(!entry) return;
-  entry.deleted = true;
-  saveEntries(); renderEntries(); renderTotals();
+  if(entry.transferId){
+    state.entries.forEach(e=>{ if(e.transferId === entry.transferId) e.deleted = true; });
+  } else {
+    entry.deleted = true;
+  }
+  saveEntries(); renderEntries(); renderWalletStrip();
   try{
     await sendToServer({ action:"delete", id:entry.id });
-  }catch(e){ /* при ошибке запись останется скрытой локально, но появится снова при следующем обновлении с сервера, если удаление не прошло */ }
+  }catch(e){ /* при сбое запись снова появится при следующей сверке, если удаление не прошло */ }
   state.deletingId = null;
   refreshFromServer(false);
 };
@@ -891,11 +1045,20 @@ function showToast(text){
 /* ---------- Инициализация ---------- */
 
 loadCategoriesCache();
+loadWalletsCache();
+state.selectedWallet = localStorage.getItem(WALLET_KEY) || (currentWallets()[0] && currentWallets()[0].name) || null;
 setType("income");
 loadEntries();
+renderWalletStrip();
 renderEntries();
-renderTotals();
 if(state.entries.some(e=>e.status!=="synced")) el("btnRetry").style.display="inline";
+
+state.employeeName = localStorage.getItem(EMPLOYEE_KEY) || "";
+updateEmployeeDisplay();
+if(!state.employeeName) openEmployeeModal(true);
+
+el("title").addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); el("amount").focus(); } });
+el("amount").addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); el("amount").blur(); submitEntry(); } });
 
 refreshFromServer(false);
 setInterval(()=> refreshFromServer(false), REFRESH_INTERVAL_MS);
