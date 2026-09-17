@@ -606,14 +606,29 @@ function reconcileWithRemote(data){
     const remoteEntries = data.rows.map(mapRemoteRow);
     const remoteIds = new Set(remoteEntries.map(e=>e.id));
     // локальные записи, которых ещё нет на сервере (только что отправлены/не отправились)
-    const localOnly = state.entries.filter(e => !remoteIds.has(e.id) && !e.deleted);
+    // сохраняем только записи, которые ещё не подтверждены сервером (только что
+    // добавлены/редактируются локально) — если запись УЖЕ была подтверждена
+    // ("synced"), а сейчас её нет среди строк с сервера, значит её удалили
+    // прямо в таблице, и она не должна "воскресать" в приложении
+    const localOnly = state.entries.filter(e => !remoteIds.has(e.id) && !e.deleted && e.status !== "synced");
     // если отправка "pending" не подтвердилась сервером слишком долго — считаем сбоем,
     // чтобы запись не выглядела вечно "в ожидании" и её можно было отправить повторно
     localOnly.forEach(e=>{
       if(e.status === "pending" && e.sentAt && (Date.now() - e.sentAt) > UNCONFIRMED_TIMEOUT_MS){
         e.status = "error";
+        if(state.pendingStatusEntryId === e.id){
+          setSyncStatus("Не отправлено — сохранено локально", "error");
+          el("btnRetry").style.display = "inline";
+          state.pendingStatusEntryId = null;
+        }
       }
     });
+    // если запись, о которой сейчас написано "ждём подтверждения", появилась
+    // среди подтверждённых с сервера — обновляем надпись, чтобы она не "зависала"
+    if(state.pendingStatusEntryId && remoteIds.has(state.pendingStatusEntryId)){
+      setSyncStatus("Сохранено", "ok");
+      state.pendingStatusEntryId = null;
+    }
     state.entries = [...localOnly, ...remoteEntries].sort((a,b)=> new Date(b.timestamp) - new Date(a.timestamp));
     saveEntries();
     if(state.entries.some(e=>e.status==="error")) el("btnRetry").style.display="inline";
@@ -707,9 +722,11 @@ async function syncEntry(entry){
     // когда появится в данных, полученных с сервера при обновлении.
     entry.status = "pending";
     entry.sentAt = Date.now();
+    state.pendingStatusEntryId = entry.id;
     setSyncStatus("Отправлено, ждём подтверждения", "pending");
   }catch(err){
     entry.status = "error";
+    state.pendingStatusEntryId = entry.id;
     setSyncStatus("Не отправлено — сохранено локально", "error");
     el("btnRetry").style.display = "inline";
   }
