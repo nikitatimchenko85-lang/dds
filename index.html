@@ -177,7 +177,7 @@
 
   <div class="field">
     <label>Наименование<span class="req">*</span></label>
-    <input type="text" id="title" placeholder="Например: Оплата аренды за март">
+    <input type="text" id="title" placeholder="Например: Оплата аренды за март" enterkeyhint="next">
   </div>
 
   <div class="field">
@@ -187,7 +187,7 @@
 
   <div class="field">
     <label>Сумма, ₽<span class="req">*</span></label>
-    <input type="number" inputmode="decimal" id="amount" class="amount-input" placeholder="0">
+    <input type="number" inputmode="decimal" id="amount" class="amount-input" placeholder="0" enterkeyhint="done">
   </div>
 
   <div class="field">
@@ -358,8 +358,8 @@ function setType(type){
   fillCategorySelect(el("category"), type, false);
 }
 
-el("btnIncome").onclick = ()=> setType("income");
-el("btnExpense").onclick = ()=> setType("expense");
+el("btnIncome").onclick = ()=>{ setType("income"); el("title").focus(); };
+el("btnExpense").onclick = ()=>{ setType("expense"); el("title").focus(); };
 
 /* ---------- Имя сотрудника: спрашиваем один раз при первом запуске ---------- */
 
@@ -395,6 +395,15 @@ el("btnEmployeeSave").onclick = ()=>{
 state.employeeName = localStorage.getItem(EMPLOYEE_KEY) || "";
 updateEmployeeDisplay();
 if(!state.employeeName) openEmployeeModal(true);
+
+/* Enter на клавиатуре ведёт по полям и отправляет запись без необходимости
+   видеть кнопку "Добавить" — она может быть скрыта клавиатурой на телефоне */
+el("title").addEventListener("keydown", (e)=>{
+  if(e.key === "Enter"){ e.preventDefault(); el("amount").focus(); }
+});
+el("amount").addEventListener("keydown", (e)=>{
+  if(e.key === "Enter"){ e.preventDefault(); el("amount").blur(); submitEntry(); }
+});
 
 /* ---------- Фото: камера ---------- */
 
@@ -754,15 +763,12 @@ function renderEntries(){
     return;
   }
   list.innerHTML = visible.map(e=>{
-    const thumbSrc = e.photo || e.photoUrl;
-    const thumb = thumbSrc ? `<img class="thumb" src="${thumbSrc}">` : "";
     const dot = e.status==="error" ? `<span class="dot error"></span>` : e.status==="pending" ? `<span class="dot pending"></span>` : "";
     const d = new Date(e.timestamp);
     const dateStr = d.toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"}) + " " + d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
     const metaStr = [dateStr, e.employee].filter(Boolean).join(" · ");
     return `<div class="entry ${e.type}" data-id="${e.id}">
       <div class="stripe"></div>
-      ${thumb}
       <div class="info">
         <div class="title">${escapeHtml(e.title || e.category)}${dot}</div>
         <div class="cat">${escapeHtml(e.category)}</div>
