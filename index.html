@@ -28,7 +28,11 @@
     padding:18px 16px 10px; position:sticky; top:0; background:var(--bg); z-index:5;
     border-bottom:1px solid var(--border);
   }
+  .header-top{display:flex; align-items:center; justify-content:space-between;}
   header h1{margin:0; font-size:20px; font-weight:700;}
+  .refresh-btn{background:none; border:none; color:var(--muted); font-size:13px; padding:4px 8px;}
+  .refresh-btn.spinning{opacity:.5;}
+  .sync-meta{font-size:11px; color:var(--muted); margin-top:2px;}
   .balance-row{display:flex; gap:10px; margin-top:12px;}
   .balance-card{flex:1; background:var(--card); border-radius:var(--radius); padding:10px 12px;}
   .balance-card .label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
@@ -49,6 +53,7 @@
 
   .field{margin-bottom:14px;}
   .field label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.03em;}
+  .field label .req{color:var(--expense); margin-left:2px;}
   select, input[type=number], input[type=text], textarea{
     width:100%; padding:14px; border-radius:12px; border:1px solid var(--border);
     background:var(--card2); color:var(--text); font-size:16px; appearance:none; -webkit-appearance:none;
@@ -61,8 +66,7 @@
   .photo-field{display:flex; gap:10px;}
   .photo-btn{
     flex:1; padding:16px 8px; border-radius:12px; border:1px dashed var(--border);
-    background:var(--card2); color:var(--muted); font-size:13px; display:flex; flex-direction:column;
-    align-items:center; gap:6px;
+    background:var(--card2); color:var(--muted); font-size:14px; font-weight:600;
   }
   .photo-preview{position:relative; width:100%;}
   .photo-preview img{width:100%; border-radius:12px; display:block; max-height:240px; object-fit:cover;}
@@ -96,8 +100,8 @@
   .entry.expense .stripe{background:var(--expense);}
   .entry .thumb{width:42px; height:42px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--card2);}
   .entry .info{flex:1; min-width:0;}
-  .entry .cat{font-size:14px; font-weight:600;}
-  .entry .comment{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .entry .title{font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .entry .cat{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .entry .meta{font-size:11px; color:var(--muted); margin-top:2px;}
   .entry .amount{font-size:15px; font-weight:700; white-space:nowrap;}
   .entry.income .amount{color:var(--income);}
@@ -134,6 +138,7 @@
     background:var(--card); width:100%; border-radius:18px 18px 0 0; padding:18px 16px 26px; max-height:85vh; overflow:auto;
   }
   .modal h3{margin:0 0 14px;}
+  .modal p{margin:0; font-size:14px; color:var(--muted);}
   .modal-actions{display:flex; gap:10px; margin-top:16px;}
   .modal-actions button{flex:1; padding:13px; border-radius:10px; border:none; font-size:14px; font-weight:600;}
   .btn-cancel{background:var(--card2); color:var(--text);}
@@ -151,7 +156,11 @@
 <body>
 
 <header>
-  <h1>ДДС</h1>
+  <div class="header-top">
+    <h1>ДДС</h1>
+    <button class="refresh-btn" id="btnRefresh">Обновить</button>
+  </div>
+  <div class="sync-meta" id="syncMeta">Загрузка...</div>
   <div class="balance-row">
     <div class="balance-card income"><div class="label">Доход</div><div class="value" id="sumIncome">0</div></div>
     <div class="balance-card expense"><div class="label">Расход</div><div class="value" id="sumExpense">0</div></div>
@@ -161,14 +170,19 @@
 
 <main>
 
+  <div class="field">
+    <label>Сотрудник<span class="req">*</span></label>
+    <input type="text" id="employee" placeholder="Имя сотрудника">
+  </div>
+
   <div class="type-toggle">
     <button class="type-btn income active" id="btnIncome">Доход</button>
     <button class="type-btn expense" id="btnExpense">Расход</button>
   </div>
 
   <div class="field">
-    <label>Сотрудник</label>
-    <input type="text" id="employee" placeholder="Имя сотрудника">
+    <label>Наименование<span class="req">*</span></label>
+    <input type="text" id="title" placeholder="Например: Оплата аренды за март">
   </div>
 
   <div class="field">
@@ -177,7 +191,7 @@
   </div>
 
   <div class="field">
-    <label>Сумма, ₽</label>
+    <label>Сумма, ₽<span class="req">*</span></label>
     <input type="number" inputmode="decimal" id="amount" class="amount-input" placeholder="0">
   </div>
 
@@ -190,8 +204,8 @@
     <label>Фото чека (необязательно)</label>
     <div id="photoArea">
       <div class="photo-field">
-        <button type="button" class="photo-btn" id="btnCamera">📷 Камера</button>
-        <button type="button" class="photo-btn" id="btnGallery">🖼 Галерея</button>
+        <button type="button" class="photo-btn" id="btnCamera">Камера</button>
+        <button type="button" class="photo-btn" id="btnGallery">Галерея</button>
       </div>
     </div>
     <input type="file" id="galleryInput" accept="image/*" style="display:none">
@@ -237,6 +251,10 @@
       <input type="text" id="editEmployee">
     </div>
     <div class="field">
+      <label>Наименование</label>
+      <input type="text" id="editTitle">
+    </div>
+    <div class="field">
       <label>Статья</label>
       <select id="editCategory"></select>
     </div>
@@ -256,40 +274,71 @@
   </div>
 </div>
 
-<script>
-/* ======================= НАСТРОЙКИ (правьте под себя) ======================= */
+<div id="confirmDeleteBackdrop" class="modal-backdrop" style="display:none;">
+  <div class="modal">
+    <h3>Удалить запись?</h3>
+    <p>Это действие нельзя отменить — запись будет удалена и из таблицы.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="btnConfirmDeleteCancel">Отмена</button>
+      <button class="btn-delete" id="btnConfirmDeleteOk">Удалить</button>
+    </div>
+  </div>
+</div>
 
-// URL веб-приложения Google Apps Script (см. инструкцию apps_script_instructions.txt)
+<script>
+/* ======================= НАСТРОЙКИ ======================= */
+
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcGRHM_6KHUJoySM4dU0xkfSzoWKZH7D9JVt987ollOwQl7wz0T8wlEGIk1sYSifM/exec";
 
-// Статьи доходов и расходов — свободно редактируйте списки
-const CATEGORIES = {
+// Секретный токен — должен совпадать с TOKEN в Apps Script (apps_script_code.gs).
+// Это простая защита от случайного/бездумного обращения к URL, а не полноценная
+// авторизация: любой, кто откроет исходный код этого файла, может увидеть токен.
+// Держите ссылку на приложение и сам файл вне публичного доступа.
+const API_TOKEN = "СМЕНИТЕ_ЭТОТ_ТОКЕН";
+
+// Через сколько мс считать неподтверждённую отправку сбоем и предлагать повтор
+const UNCONFIRMED_TIMEOUT_MS = 90000;
+
+// Список статей по умолчанию — используется только пока не загрузились
+// актуальные статьи из листа "Статьи" в Google Таблице, и как офлайн-запас.
+// Создавать/редактировать статьи лучше прямо в этом листе таблицы.
+const DEFAULT_CATEGORIES = {
   income: ["Продажа билетов", "Аренда зала", "Кейтеринг", "Прочие доходы"],
   expense: ["Аренда", "Зарплата", "Коммунальные услуги", "Закупки", "Реклама", "Транспорт", "Прочее"]
 };
+
+const REFRESH_INTERVAL_MS = 30000;
 
 /* ============================================================================ */
 
 const state = {
   type: "income",
-  photo: null, // {dataUrl, mime}
-  entries: [], // local cache of all entries (from localStorage, merged with server)
+  photo: null,
+  entries: [],
+  categories: null, // заполняется с сервера, иначе DEFAULT_CATEGORIES
   editingId: null,
+  deletingId: null,
   facingMode: "environment",
-  stream: null
+  stream: null,
+  refreshing: false
 };
 
 const el = id => document.getElementById(id);
 
+function currentCategories(){
+  return state.categories || DEFAULT_CATEGORIES;
+}
+
 function fillCategorySelect(select, type, keepValue){
   const prev = keepValue ? select.value : null;
+  const list = currentCategories()[type] || [];
   select.innerHTML = "";
-  CATEGORIES[type].forEach(c=>{
+  list.forEach(c=>{
     const o = document.createElement("option");
     o.value = c; o.textContent = c;
     select.appendChild(o);
   });
-  if(prev && CATEGORIES[type].includes(prev)) select.value = prev;
+  if(prev && list.includes(prev)) select.value = prev;
 }
 
 function setType(type){
@@ -303,9 +352,8 @@ function setType(type){
 
 el("btnIncome").onclick = ()=> setType("income");
 el("btnExpense").onclick = ()=> setType("expense");
-setType("income");
 
-/* запоминаем последнее введённое имя сотрудника, чтобы не вбивать заново */
+/* запоминаем последнее имя сотрудника */
 el("employee").value = localStorage.getItem("dds_last_employee") || "";
 el("employee").addEventListener("input", ()=>{
   localStorage.setItem("dds_last_employee", el("employee").value);
@@ -313,8 +361,11 @@ el("employee").addEventListener("input", ()=>{
 
 /* ---------- Фото: камера ---------- */
 
-el("btnCamera").onclick = openCamera;
-el("btnGallery").onclick = ()=> el("galleryInput").click();
+function bindPhotoButtons(){
+  el("btnCamera").onclick = openCamera;
+  el("btnGallery").onclick = ()=> el("galleryInput").click();
+}
+bindPhotoButtons();
 
 el("galleryInput").onchange = (e)=>{
   const file = e.target.files[0];
@@ -350,7 +401,6 @@ el("btnShutter").onclick = ()=>{
   const canvas = el("captureCanvas");
   canvas.width = video.videoWidth; canvas.height = video.videoHeight;
   const ctx = canvas.getContext("2d");
-  // no mirror effect regardless of facing mode
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
   setPhoto(dataUrl, "image/jpeg");
@@ -373,15 +423,14 @@ function renderPhotoArea(){
   } else {
     area.innerHTML = `
       <div class="photo-field">
-        <button type="button" class="photo-btn" id="btnCamera">📷 Камера</button>
-        <button type="button" class="photo-btn" id="btnGallery">🖼 Галерея</button>
+        <button type="button" class="photo-btn" id="btnCamera">Камера</button>
+        <button type="button" class="photo-btn" id="btnGallery">Галерея</button>
       </div>`;
-    el("btnCamera").onclick = openCamera;
-    el("btnGallery").onclick = ()=> el("galleryInput").click();
+    bindPhotoButtons();
   }
 }
 
-/* ---------- Хранение и синхронизация ---------- */
+/* ---------- Хранение ---------- */
 
 function loadEntries(){
   try{
@@ -391,38 +440,129 @@ function loadEntries(){
 function saveEntries(){
   localStorage.setItem("dds_entries", JSON.stringify(state.entries));
 }
+function loadCategoriesCache(){
+  try{
+    const cached = JSON.parse(localStorage.getItem("dds_categories_cache") || "null");
+    if(cached) state.categories = cached;
+  }catch(e){}
+}
+function saveCategoriesCache(){
+  if(state.categories) localStorage.setItem("dds_categories_cache", JSON.stringify(state.categories));
+}
 
 function uid(){
   return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
 }
 
+/* ---------- Отправка на сервер (запись) ---------- */
+
 async function sendToServer(payload){
   if(!SCRIPT_URL || SCRIPT_URL.indexOf("PASTE_") === 0){
     throw new Error("no_url");
   }
-  const res = await fetch(SCRIPT_URL, {
+  const body = Object.assign({ token: API_TOKEN }, payload);
+  // Ответ Apps Script на POST часто нечитаем в браузере из-за редиректа
+  // на другой домен (CORS), хотя сама запись уже успешно прошла на сервере.
+  // Поэтому отправляем в режиме no-cors: реальные сетевые сбои (нет
+  // интернета, неверный URL) всё ещё будут пойманы как ошибка.
+  await fetch(SCRIPT_URL, {
     method:"POST",
-    headers:{ "Content-Type":"text/plain;charset=utf-8" }, // избегаем preflight
-    body: JSON.stringify(payload)
+    mode:"no-cors",
+    headers:{ "Content-Type":"text/plain;charset=utf-8" },
+    body: JSON.stringify(body)
   });
+  return { ok:true };
+}
+
+/* ---------- Чтение с сервера (двусторонняя синхронизация) ---------- */
+
+async function fetchFromServer(){
+  const url = SCRIPT_URL + (SCRIPT_URL.indexOf("?")===-1 ? "?" : "&") + "action=bootstrap&token=" + encodeURIComponent(API_TOKEN) + "&_=" + Date.now();
+  const res = await fetch(url, { method:"GET" });
   const data = await res.json();
   if(!data.ok) throw new Error(data.error || "server_error");
   return data;
 }
 
-async function submitEntry(){
-  const amountVal = parseFloat(el("amount").value);
-  if(!amountVal || amountVal <= 0){
-    showToast("Введите сумму");
-    return;
+function mapRemoteRow(r){
+  return {
+    id: String(r.id),
+    timestamp: r.timestamp,
+    type: r.type === "Доход" ? "income" : "expense",
+    employee: r.employee || "",
+    title: r.title || "",
+    category: r.category || "",
+    amount: Number(r.amount) || 0,
+    comment: r.comment || "",
+    photo: null,
+    photoUrl: r.photoUrl || null,
+    status: "synced"
+  };
+}
+
+function reconcileWithRemote(data){
+  if(data.categories){
+    state.categories = data.categories;
+    saveCategoriesCache();
+    fillCategorySelect(el("category"), state.type, true);
   }
+  if(data.rows){
+    const remoteEntries = data.rows.map(mapRemoteRow);
+    const remoteIds = new Set(remoteEntries.map(e=>e.id));
+    // локальные записи, которых ещё нет на сервере (только что отправлены/не отправились)
+    const localOnly = state.entries.filter(e => !remoteIds.has(e.id) && !e.deleted);
+    // если отправка "pending" не подтвердилась сервером слишком долго — считаем сбоем,
+    // чтобы запись не выглядела вечно "в ожидании" и её можно было отправить повторно
+    localOnly.forEach(e=>{
+      if(e.status === "pending" && e.sentAt && (Date.now() - e.sentAt) > UNCONFIRMED_TIMEOUT_MS){
+        e.status = "error";
+      }
+    });
+    state.entries = [...localOnly, ...remoteEntries].sort((a,b)=> new Date(b.timestamp) - new Date(a.timestamp));
+    saveEntries();
+    if(state.entries.some(e=>e.status==="error")) el("btnRetry").style.display="inline";
+  }
+  renderEntries();
+  renderTotals();
+}
+
+async function refreshFromServer(manual){
+  if(state.refreshing) return;
+  state.refreshing = true;
+  if(manual) el("btnRefresh").classList.add("spinning");
+  try{
+    const data = await fetchFromServer();
+    reconcileWithRemote(data);
+    el("syncMeta").textContent = "Обновлено " + new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+  }catch(err){
+    el("syncMeta").textContent = "Не удалось обновить с сервера — показаны локальные данные";
+  }
+  state.refreshing = false;
+  if(manual) el("btnRefresh").classList.remove("spinning");
+}
+el("btnRefresh").onclick = ()=> refreshFromServer(true);
+
+/* ---------- Добавление записи ---------- */
+
+function validateForm(){
+  if(!el("employee").value.trim()){ showToast("Укажите сотрудника"); return false; }
+  if(!el("title").value.trim()){ showToast("Укажите наименование"); return false; }
+  const amountVal = parseFloat(el("amount").value);
+  if(!amountVal || amountVal <= 0){ showToast("Введите сумму"); return false; }
+  return true;
+}
+
+async function submitEntry(){
+  if(!validateForm()) return;
+
   const entry = {
     id: uid(),
     timestamp: new Date().toISOString(),
     type: state.type,
     employee: el("employee").value.trim(),
+    title: el("title").value.trim(),
     category: el("category").value,
-    amount: amountVal,
+    amount: parseFloat(el("amount").value),
     comment: el("comment").value.trim(),
     photo: state.photo ? state.photo.dataUrl : null,
     photoUrl: null,
@@ -434,32 +574,38 @@ async function submitEntry(){
   renderEntries();
   renderTotals();
 
+  el("title").value = "";
   el("amount").value = "";
   el("comment").value = "";
   state.photo = null;
   renderPhotoArea();
 
-  syncEntry(entry);
+  await syncEntry(entry);
+  refreshFromServer(false);
 }
 
 async function syncEntry(entry){
   setSyncStatus("Отправка...", "pending");
   try{
-    const data = await sendToServer({
+    await sendToServer({
       action:"add",
       id: entry.id,
       timestamp: entry.timestamp,
       type: entry.type,
       employee: entry.employee,
+      title: entry.title,
       category: entry.category,
       amount: entry.amount,
       comment: entry.comment,
       photoBase64: entry.photo ? entry.photo.split(",")[1] : null,
       photoMime: entry.photo ? entry.photo.split(";")[0].split(":")[1] : null
     });
-    entry.status = "synced";
-    if(data.photoUrl) entry.photoUrl = data.photoUrl;
-    setSyncStatus("Сохранено", "ok");
+    // no-cors не даёт прочитать ответ сервера, поэтому статус остаётся "pending"
+    // (отправлено, ждём подтверждения) — окончательно "synced" запись станет,
+    // когда появится в данных, полученных с сервера при обновлении.
+    entry.status = "pending";
+    entry.sentAt = Date.now();
+    setSyncStatus("Отправлено, ждём подтверждения", "pending");
   }catch(err){
     entry.status = "error";
     setSyncStatus("Не отправлено — сохранено локально", "error");
@@ -472,7 +618,7 @@ async function syncEntry(entry){
 function retryPending(){
   const pending = state.entries.filter(e=> e.status !== "synced");
   if(pending.length === 0){ el("btnRetry").style.display="none"; return; }
-  pending.forEach(e=> syncEntry(e));
+  pending.forEach(e=> syncEntry(e).then(()=> refreshFromServer(false)));
 }
 el("btnRetry").onclick = retryPending;
 
@@ -505,7 +651,7 @@ function fmt(n){
 
 function renderEntries(){
   const list = el("entriesList");
-  const visible = state.entries.filter(e=>!e.deleted).slice(0, 100);
+  const visible = state.entries.filter(e=>!e.deleted).slice(0, 150);
   if(visible.length===0){
     list.innerHTML = `<div class="empty">Пока нет записей</div>`;
     return;
@@ -515,14 +661,14 @@ function renderEntries(){
     const dot = e.status==="error" ? `<span class="dot error"></span>` : e.status==="pending" ? `<span class="dot pending"></span>` : "";
     const d = new Date(e.timestamp);
     const dateStr = d.toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"}) + " " + d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
-    const metaStr = dateStr + (e.employee ? " · " + escapeHtml(e.employee) : "");
+    const metaStr = [dateStr, e.employee].filter(Boolean).join(" · ");
     return `<div class="entry ${e.type}" data-id="${e.id}">
       <div class="stripe"></div>
       ${thumb}
       <div class="info">
-        <div class="cat">${escapeHtml(e.category)}${dot}</div>
-        ${e.comment ? `<div class="comment">${escapeHtml(e.comment)}</div>` : ""}
-        <div class="meta">${metaStr}</div>
+        <div class="title">${escapeHtml(e.title || e.category)}${dot}</div>
+        <div class="cat">${escapeHtml(e.category)}</div>
+        <div class="meta">${escapeHtml(metaStr)}</div>
       </div>
       <div class="amount">${e.type==="expense"?"−":"+"}${fmt(e.amount)} ₽</div>
     </div>`;
@@ -544,6 +690,7 @@ function openEditModal(id){
   state.editingId = id;
   el("editType").value = entry.type;
   el("editEmployee").value = entry.employee || "";
+  el("editTitle").value = entry.title || "";
   fillCategorySelect(el("editCategory"), entry.type, false);
   el("editCategory").value = entry.category;
   el("editAmount").value = entry.amount;
@@ -558,6 +705,7 @@ el("btnEditSave").onclick = async ()=>{
   if(!entry) return;
   entry.type = el("editType").value;
   entry.employee = el("editEmployee").value.trim();
+  entry.title = el("editTitle").value.trim();
   entry.category = el("editCategory").value;
   entry.amount = parseFloat(el("editAmount").value) || entry.amount;
   entry.comment = el("editComment").value.trim();
@@ -565,30 +713,43 @@ el("btnEditSave").onclick = async ()=>{
   saveEntries(); renderEntries(); renderTotals();
   el("editModalBackdrop").style.display="none";
   try{
-    await sendToServer({ action:"edit", id:entry.id, type:entry.type, employee:entry.employee, category:entry.category, amount:entry.amount, comment:entry.comment });
-    entry.status = "synced";
+    await sendToServer({ action:"edit", id:entry.id, type:entry.type, employee:entry.employee, title:entry.title, category:entry.category, amount:entry.amount, comment:entry.comment });
+    entry.status = "pending";
+    entry.sentAt = Date.now();
   }catch(e){ entry.status="error"; el("btnRetry").style.display="inline"; }
   saveEntries(); renderEntries();
+  refreshFromServer(false);
 };
 
-el("btnEditDelete").onclick = async ()=>{
-  const entry = state.entries.find(e=>e.id===state.editingId);
+el("btnEditDelete").onclick = ()=>{
+  state.deletingId = state.editingId;
+  el("editModalBackdrop").style.display = "none";
+  el("confirmDeleteBackdrop").style.display = "flex";
+};
+el("btnConfirmDeleteCancel").onclick = ()=>{
+  el("confirmDeleteBackdrop").style.display = "none";
+  state.deletingId = null;
+};
+el("btnConfirmDeleteOk").onclick = async ()=>{
+  const entry = state.entries.find(e=>e.id===state.deletingId);
+  el("confirmDeleteBackdrop").style.display = "none";
   if(!entry) return;
   entry.deleted = true;
   saveEntries(); renderEntries(); renderTotals();
-  el("editModalBackdrop").style.display="none";
   try{
     await sendToServer({ action:"delete", id:entry.id });
-  }catch(e){ /* остаётся помеченным удалённым локально, попадёт в retry при необходимости */ }
+  }catch(e){ /* при ошибке запись останется скрытой локально, но появится снова при следующем обновлении с сервера, если удаление не прошло */ }
+  state.deletingId = null;
+  refreshFromServer(false);
 };
 
 /* ---------- CSV экспорт ---------- */
 
 el("exportCsv").onclick = (e)=>{
   e.preventDefault();
-  const rows = [["Дата","Тип","Сотрудник","Статья","Сумма","Комментарий"]];
+  const rows = [["Дата","Тип","Сотрудник","Наименование","Статья","Сумма","Комментарий"]];
   state.entries.filter(x=>!x.deleted).forEach(en=>{
-    rows.push([en.timestamp, en.type==="income"?"Доход":"Расход", en.employee||"", en.category, en.amount, en.comment||""]);
+    rows.push([en.timestamp, en.type==="income"?"Доход":"Расход", en.employee||"", en.title||"", en.category, en.amount, en.comment||""]);
   });
   const csv = rows.map(r=> r.map(v=> `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
   const blob = new Blob(["\ufeff"+csv], {type:"text/csv;charset=utf-8"});
@@ -607,10 +768,15 @@ function showToast(text){
 
 /* ---------- Инициализация ---------- */
 
+loadCategoriesCache();
+setType("income");
 loadEntries();
 renderEntries();
 renderTotals();
 if(state.entries.some(e=>e.status!=="synced")) el("btnRetry").style.display="inline";
+
+refreshFromServer(false);
+setInterval(()=> refreshFromServer(false), REFRESH_INTERVAL_MS);
 </script>
 </body>
 </html>
