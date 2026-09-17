@@ -12,17 +12,15 @@
     --border:#e6e6ec;
     --text:#15161b;
     --muted:#8b8f9c;
-    --income:#33c17a;
-    --income-soft:rgba(51,193,122,.12);
+    --income:#1fae63;
     --expense:#e2483d;
-    --expense-soft:rgba(226,72,61,.12);
     --transfer:#3d6ae2;
     --transfer-soft:rgba(61,106,226,.12);
     --accent:#3d6ae2;
-    --radius:22px;
+    --radius:20px;
     --radius-sm:14px;
     --shadow:0 1px 2px rgba(20,20,30,.05), 0 8px 20px rgba(20,20,30,.06);
-    --ease:cubic-bezier(.4,0,.2,1);
+    --ease:cubic-bezier(.22,1,.36,1);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   body{
@@ -30,91 +28,96 @@
     background:var(--bg); color:var(--text); padding-bottom:40px;
   }
   button, input, select, textarea{ font-family:inherit; }
-  button{ cursor:pointer; transition: transform .22s var(--ease), background-color .22s var(--ease), color .22s var(--ease), opacity .22s var(--ease); }
+  button{ cursor:pointer; transition: transform .2s var(--ease), background-color .28s var(--ease), border-color .28s var(--ease), color .28s var(--ease), opacity .2s ease; }
   button:active{ transform:scale(.97); }
 
-  header{ padding:16px 16px 0; position:sticky; top:0; background:var(--bg); z-index:5; }
+  header{ padding:16px 16px 8px; position:sticky; top:0; background:var(--bg); z-index:5; }
   .header-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
-  .employee-display{font-size:17px; font-weight:700; cursor:pointer;}
+  .employee-display{font-size:17px; font-weight:700; padding:2px 0; cursor:pointer;}
+  .employee-display .hint{font-size:11px; color:var(--muted); font-weight:400; display:block; margin-top:1px;}
   .refresh-btn{background:var(--card); border:1px solid var(--border); color:var(--text); font-size:12px; padding:7px 12px; border-radius:999px; box-shadow:var(--shadow);}
   .refresh-btn.spinning{opacity:.5;}
   .sync-meta{font-size:11px; color:var(--muted); margin-top:6px;}
 
-  .wallet-card{ background:var(--card); border-radius:var(--radius) var(--radius) 0 0; padding:14px 12px 22px; margin-top:10px; box-shadow:var(--shadow); }
-  .wallet-strip{display:flex; gap:10px; overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  .wallet-strip{display:flex; gap:10px; overflow-x:auto; padding:12px 2px 4px; -webkit-overflow-scrolling:touch;}
   .wallet-strip::-webkit-scrollbar{display:none;}
   .wallet-chip{
-    flex:0 0 auto; min-width:96px; background:var(--bg); border:2px solid var(--border);
-    border-radius:var(--radius-sm); padding:10px 16px; text-align:center;
-    transition: border-color .25s var(--ease), background-color .25s var(--ease), transform .2s var(--ease);
+    flex:0 0 auto; min-width:96px; background:var(--card); border:2px solid var(--border);
+    border-radius:var(--radius-sm); padding:12px 16px; box-shadow:var(--shadow);
+    transition: transform .2s var(--ease), border-color .28s var(--ease), background-color .28s var(--ease);
   }
   .wallet-chip:active{ transform:scale(.96); }
   .wallet-chip.selected{ border-color:var(--accent); background:var(--transfer-soft); }
-  .wallet-chip .wname{font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px;}
-  .wallet-chip .wcur{font-size:12px; color:var(--muted); margin-top:2px;}
+  .wallet-chip .wname{font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;}
+  .wallet-chip .wcur{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-top:3px;}
 
-  .type-bar{
-    background:var(--card-dark); border-radius:0 0 var(--radius) var(--radius);
-    padding:18px 8px 22px; margin:0 16px 22px; display:flex; align-items:center; justify-content:space-between;
-    position:relative; box-shadow:var(--shadow);
-  }
-  .type-pill{
-    flex:1; background:transparent; border:none; color:#9a9ca6; font-size:14.5px; font-weight:700;
-    padding:12px 10px; border-radius:999px; display:flex; align-items:center; justify-content:center; gap:6px;
-    transition: background-color .25s var(--ease), color .25s var(--ease);
-  }
-  .type-pill .arrow{font-size:16px; line-height:1;}
-  .type-pill.active{ background:rgba(255,255,255,.1); }
-  .type-pill.income.active{ color:var(--income); }
-  .type-pill.expense.active{ color:var(--expense); }
-  .type-transfer-btn{
-    width:52px; height:52px; border-radius:50%; background:#fff; color:var(--card-dark); border:none;
-    font-size:19px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 18px rgba(0,0,0,.28);
-    position:relative; top:-16px; flex:0 0 auto; margin:0 4px;
-    transition: background-color .25s var(--ease), color .25s var(--ease);
-  }
-  .type-transfer-btn.active{ background:var(--transfer); color:#fff; }
-  .type-bar .grip{ position:absolute; bottom:8px; left:50%; transform:translateX(-50%); width:34px; height:4px; border-radius:2px; background:rgba(255,255,255,.2);}
+  main{padding:4px 16px 14px;}
 
-  main{padding:0 16px 14px;}
+  .type-toggle{
+    display:flex; align-items:center; gap:6px; background:var(--card-dark);
+    border-radius:999px; padding:6px; margin-bottom:18px; box-shadow:var(--shadow);
+  }
+  .type-btn{
+    flex:1; padding:13px 8px; border-radius:999px; border:none; background:transparent;
+    color:rgba(255,255,255,.5); font-size:14px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; gap:5px;
+    transition: background-color .3s var(--ease), color .3s var(--ease), transform .2s var(--ease);
+  }
+  .type-btn .arrow{font-size:14px;}
+  .type-btn.income.active{background:var(--income); color:#fff;}
+  .type-btn.expense.active{background:var(--expense); color:#fff;}
+  .type-btn.transfer{
+    flex:0 0 auto; width:46px; height:46px; border-radius:50%; background:#fff; color:var(--card-dark);
+    font-size:17px; transform:translateY(-3px); box-shadow:0 6px 16px rgba(0,0,0,.35);
+  }
+  .type-btn.transfer.active{background:var(--transfer); color:#fff;}
+  .type-btn.transfer:active{ transform:translateY(-3px) scale(.94); }
 
-  .field{position:relative; margin-bottom:14px;}
-  .field input[type=text], .field input[type=number], .field textarea, .field select{
-    width:100%; padding:21px 14px 9px; border-radius:14px; border:1px solid var(--border);
+  .field-float{position:relative; margin-bottom:14px;}
+  .field-float input, .field-float textarea{
+    width:100%; padding:19px 14px 9px; border-radius:12px; border:1px solid var(--border);
+    background:var(--card); color:var(--text); font-size:16px; box-shadow:var(--shadow);
+  }
+  .field-float textarea{min-height:58px; resize:vertical; font-family:inherit;}
+  .field-float label{
+    position:absolute; left:15px; top:19px; font-size:15px; color:var(--muted);
+    pointer-events:none; transition: all .22s var(--ease); background:transparent;
+  }
+  .field-float label .req{color:var(--expense); margin-left:2px;}
+  .field-float input:focus + label, .field-float input:not(:placeholder-shown) + label,
+  .field-float textarea:focus + label, .field-float textarea:not(:placeholder-shown) + label{
+    top:7px; font-size:10.5px; text-transform:uppercase; letter-spacing:.03em;
+  }
+
+  .plain-field{margin-bottom:14px;}
+  select{
+    width:100%; padding:14px; border-radius:12px; border:1px solid var(--border);
     background:var(--card); color:var(--text); font-size:16px; appearance:none; -webkit-appearance:none;
     box-shadow:var(--shadow);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238b8f9c' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat; background-position:right 14px center;
   }
-  .field textarea{ padding-top:23px; min-height:56px; resize:vertical; }
-  .field select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238b8f9c' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>"); background-repeat:no-repeat; background-position:right 14px center;}
-  .field select:disabled, .field input:disabled{ opacity:.5; }
-  .field label{
-    position:absolute; left:15px; top:16px; font-size:15.5px; color:var(--muted);
-    pointer-events:none; transition: top .2s var(--ease), font-size .2s var(--ease), color .2s var(--ease);
-  }
-  .field label .req{color:var(--expense); margin-left:2px;}
-  .field input:focus ~ label, .field input:not(:placeholder-shown) ~ label,
-  .field textarea:focus ~ label, .field textarea:not(:placeholder-shown) ~ label,
-  .field select ~ label{
-    top:6px; font-size:10.5px; text-transform:uppercase; letter-spacing:.03em;
-  }
+  select:disabled{opacity:.55;}
 
-  .amount-field input{ font-size:25px; font-weight:800; padding-right:78px; }
-  .currency-select{
-    position:absolute; right:8px; top:50%; transform:translateY(-50%); width:auto; box-shadow:none !important;
-    border:none !important; background:var(--bg) !important; border-radius:10px !important;
-    padding:7px 22px 7px 10px !important; font-size:14px; font-weight:700; color:var(--text);
+  .amount-row{display:flex; gap:8px; margin-bottom:14px;}
+  .currency-pill{
+    flex:0 0 auto; width:auto; background:var(--card-dark); color:#fff; border:none;
+    border-radius:999px; padding:0 16px; font-size:15px; font-weight:700; text-align:center;
+    box-shadow:var(--shadow); background-image:none; -webkit-appearance:none; appearance:none;
   }
+  .currency-pill:disabled{opacity:.5;}
+  .amount-input{flex:1; font-size:26px; font-weight:800; text-align:center; border-radius:12px; border:1px solid var(--border); background:var(--card); box-shadow:var(--shadow); padding:14px;}
 
-  .transfer-row{display:flex; align-items:flex-start; gap:8px;}
-  .transfer-row .field{flex:1; margin-bottom:14px;}
-  .transfer-arrow{color:var(--muted); font-size:18px; padding-top:20px;}
+  .transfer-row{display:flex; align-items:center; gap:8px;}
+  .transfer-row .plain-field{flex:1; margin-bottom:0;}
+  .transfer-arrow{color:var(--muted); font-size:18px;}
 
   .photo-field{display:flex; gap:10px;}
   .photo-btn{
     flex:1; padding:16px 8px; border-radius:12px; border:1.5px dashed var(--border);
     background:var(--card); color:var(--muted); font-size:14px; font-weight:600;
   }
-  .photo-preview{position:relative; width:100%; animation: fadeIn .25s var(--ease);}
+  .photo-preview{position:relative; width:100%;}
   .photo-preview img{width:100%; border-radius:12px; display:block; max-height:220px; object-fit:cover;}
   .photo-remove{
     position:absolute; top:8px; right:8px; background:rgba(0,0,0,.55); color:#fff; border:none;
@@ -124,6 +127,7 @@
   .submit-btn{
     width:100%; padding:16px; border:none; border-radius:999px; font-size:16px; font-weight:800;
     color:#fff; margin-top:6px; box-shadow:var(--shadow);
+    transition: transform .2s var(--ease), background-color .3s var(--ease), opacity .2s ease;
   }
   .submit-btn.income{background:var(--income);}
   .submit-btn.expense{background:var(--expense);}
@@ -138,18 +142,17 @@
   .section-title{font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin:20px 0 10px; display:flex; justify-content:space-between; align-items:center;}
   .section-title button{background:none; border:none; color:var(--accent); font-size:12px; padding:0; box-shadow:none;}
 
-  @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
   @keyframes entryIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
   .entry{
     background:var(--card); border-radius:14px; padding:12px 14px; margin-bottom:8px;
     display:flex; align-items:center; gap:10px; box-shadow:var(--shadow);
-    animation: entryIn .3s var(--ease); transition: transform .2s var(--ease);
+    animation: entryIn .32s var(--ease); transition: transform .2s var(--ease);
   }
   .entry:active{ transform:scale(.985); }
-  .entry .thumb{width:42px; height:42px; border-radius:10px; object-fit:cover; flex-shrink:0; background:var(--bg);}
   .entry .stripe{width:4px; align-self:stretch; border-radius:2px;}
   .entry.income .stripe{background:var(--income);}
   .entry.expense .stripe{background:var(--expense);}
+  .entry .thumb{width:42px; height:42px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--bg);}
   .entry .info{flex:1; min-width:0;}
   .entry .title{font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .entry .cat{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
@@ -165,7 +168,7 @@
 
   .camera-overlay{
     position:fixed; inset:0; background:#000; z-index:100; display:flex; flex-direction:column;
-    opacity:0; transition:opacity .28s var(--ease);
+    opacity:0; transition:opacity .3s var(--ease);
   }
   .camera-overlay.show{ opacity:1; }
   .camera-overlay video{flex:1; width:100%; object-fit:cover; background:#000;}
@@ -180,7 +183,7 @@
   }
   .modal-backdrop.show{ opacity:1; pointer-events:auto; background:rgba(20,20,30,.55); }
   .modal{
-    background:var(--card); width:100%; border-radius:24px 24px 0 0; padding:20px 16px 28px; max-height:85vh; overflow:auto;
+    background:var(--card); width:100%; border-radius:22px 22px 0 0; padding:18px 16px 26px; max-height:85vh; overflow:auto;
     transform:translateY(100%); transition: transform .4s var(--ease);
   }
   .modal-backdrop.show .modal{ transform:translateY(0); }
@@ -195,7 +198,6 @@
   .toast{
     position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--card-dark);
     color:#fff; padding:10px 18px; border-radius:20px; font-size:13px; z-index:200;
-    animation: fadeIn .2s var(--ease);
   }
 </style>
 </head>
@@ -207,57 +209,50 @@
     <button class="refresh-btn" id="btnRefresh">Обновить</button>
   </div>
   <div class="sync-meta" id="syncMeta">Загрузка...</div>
-</header>
-
-<div class="wallet-card">
   <div class="wallet-strip" id="walletStrip"></div>
-</div>
-<div class="type-bar">
-  <button class="type-pill income active" id="btnIncome">Приход <span class="arrow">↑</span></button>
-  <button class="type-transfer-btn" id="btnTransfer">⇄</button>
-  <button class="type-pill expense" id="btnExpense"><span class="arrow">↓</span> Расход</button>
-  <div class="grip"></div>
-</div>
+</header>
 
 <main>
 
+  <div class="type-toggle">
+    <button class="type-btn income active" id="btnIncome"><span class="arrow">↓</span>Приход</button>
+    <button class="type-btn transfer" id="btnTransfer">⇄</button>
+    <button class="type-btn expense" id="btnExpense">Расход<span class="arrow">↑</span></button>
+  </div>
+
   <div id="normalFields">
-    <div class="field">
+    <div class="field-float">
       <input type="text" id="title" placeholder=" " enterkeyhint="next">
-      <label>Наименование<span class="req">*</span></label>
+      <label for="title">Наименование<span class="req">*</span></label>
     </div>
-    <div class="field">
+    <div class="plain-field">
       <select id="category"></select>
-      <label>Статья</label>
     </div>
   </div>
 
   <div id="transferFields" style="display:none;">
     <div class="transfer-row">
-      <div class="field">
+      <div class="plain-field">
         <select id="transferFrom"></select>
-        <label>Откуда</label>
       </div>
       <div class="transfer-arrow">→</div>
-      <div class="field">
+      <div class="plain-field">
         <select id="transferTo"></select>
-        <label>Куда</label>
       </div>
     </div>
   </div>
 
-  <div class="field amount-field">
-    <input type="number" inputmode="decimal" id="amount" placeholder=" " enterkeyhint="done">
-    <label>Сумма<span class="req">*</span></label>
-    <select id="amountCurrency" class="currency-select"></select>
+  <div class="amount-row">
+    <select id="currencySelect" class="currency-pill"></select>
+    <input type="number" inputmode="decimal" id="amount" class="amount-input" placeholder="0" enterkeyhint="done">
   </div>
 
-  <div class="field">
+  <div class="field-float">
     <textarea id="comment" placeholder=" "></textarea>
-    <label>Комментарий</label>
+    <label for="comment">Комментарий</label>
   </div>
 
-  <div class="field" id="photoFieldWrapper">
+  <div class="plain-field" id="photoFieldWrapper">
     <div id="photoArea">
       <div class="photo-field">
         <button type="button" class="photo-btn" id="btnCamera">Камера</button>
@@ -293,34 +288,31 @@
 <div id="editModalBackdrop" class="modal-backdrop" style="display:none;">
   <div class="modal">
     <h3>Редактировать запись</h3>
-    <div class="field">
+    <div class="plain-field">
       <select id="editType">
         <option value="income">Приход</option>
         <option value="expense">Расход</option>
       </select>
-      <label>Тип</label>
     </div>
-    <div class="field">
+    <div class="field-float">
       <input type="text" id="editTitle" placeholder=" ">
-      <label>Наименование</label>
+      <label for="editTitle">Наименование</label>
     </div>
-    <div class="field">
+    <div class="plain-field">
       <select id="editCategory"></select>
-      <label>Статья</label>
     </div>
-    <div class="field">
+    <div class="plain-field">
       <select id="editWallet"></select>
-      <label>Кошелёк</label>
     </div>
-    <div class="field">
-      <input type="number" id="editAmount" placeholder=" ">
-      <label>Сумма</label>
+    <div class="amount-row">
+      <select id="editCurrencySelect" class="currency-pill"></select>
+      <input type="number" id="editAmount" class="amount-input">
     </div>
-    <div class="field">
+    <div class="field-float">
       <textarea id="editComment" placeholder=" "></textarea>
-      <label>Комментарий</label>
+      <label for="editComment">Комментарий</label>
     </div>
-    <div class="field">
+    <div class="plain-field">
       <div id="editPhotoArea"></div>
       <input type="file" id="editGalleryInput" accept="image/*" style="display:none">
     </div>
@@ -335,7 +327,7 @@
 <div id="confirmDeleteBackdrop" class="modal-backdrop" style="display:none;">
   <div class="modal">
     <h3>Удалить запись?</h3>
-    <p id="confirmDeleteText">Это действие нельзя отменить — запись будет удалена и из таблицы.</p>
+    <p id="confirmDeleteText">Это действие нельзя отменить.</p>
     <div class="modal-actions">
       <button class="btn-cancel" id="btnConfirmDeleteCancel">Отмена</button>
       <button class="btn-delete" id="btnConfirmDeleteOk">Удалить</button>
@@ -346,9 +338,8 @@
 <div id="employeeBackdrop" class="modal-backdrop" style="display:none;">
   <div class="modal">
     <h3 id="employeeModalTitle">Как вас зовут?</h3>
-    <div class="field" style="margin-top:14px;">
-      <input type="text" id="employeeNameInput" placeholder=" ">
-      <label>Имя сотрудника</label>
+    <div class="plain-field" style="margin-top:14px;">
+      <input type="text" id="employeeNameInput" placeholder="Имя сотрудника" style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border); background:var(--card); font-size:16px; box-shadow:var(--shadow);">
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" id="btnEmployeeCancel" style="display:none;">Отмена</button>
@@ -370,6 +361,7 @@ const DEFAULT_CATEGORIES = {
   expense: ["Аренда", "Зарплата", "Коммунальные услуги", "Закупки", "Реклама", "Транспорт", "Прочее"]
 };
 const DEFAULT_WALLETS = [{ name: "Касса", currency: "RUB" }];
+const CURRENCIES = ["RUB", "USD", "EUR", "THB"];
 const CURRENCY_SYMBOLS = { RUB:"₽", USD:"$", EUR:"€", THB:"฿" };
 function currencySymbol(code){ return CURRENCY_SYMBOLS[code] || code || ""; }
 
@@ -385,6 +377,7 @@ const state = {
   categories: null,
   wallets: null,
   selectedWallet: null,
+  manualCurrency: null,
   employeeName: "",
   editingId: null,
   deletingId: null,
@@ -414,16 +407,13 @@ function fillCategorySelect(select, type, keepValue){
 
 function fillWalletOptions(select){
   select.innerHTML = currentWallets().map(w=>
-    `<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)} (${w.currency})</option>`
+    `<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)}</option>`
   ).join("");
 }
 
-function populateAmountCurrency(){
-  el("amountCurrency").innerHTML = Object.keys(CURRENCY_SYMBOLS).map(code=>
-    `<option value="${code}">${CURRENCY_SYMBOLS[code]} ${code}</option>`
-  ).join("");
+function fillCurrencySelect(select){
+  select.innerHTML = CURRENCIES.map(c=> `<option value="${c}">${currencySymbol(c)} ${c}</option>`).join("");
 }
-populateAmountCurrency();
 
 /* ---------- Модалки: показ/скрытие с анимацией ---------- */
 
@@ -450,7 +440,8 @@ function setType(type){
   el("normalFields").style.display = isTransfer ? "none" : "";
   el("transferFields").style.display = isTransfer ? "" : "none";
   el("photoFieldWrapper").style.display = isTransfer ? "none" : "";
-  el("amountCurrency").disabled = isTransfer;
+  el("currencySelect").style.display = isTransfer ? "none" : "";
+  el("currencySelect").disabled = isTransfer;
 
   if(isTransfer){
     el("btnSubmit").className = "submit-btn transfer";
@@ -460,27 +451,41 @@ function setType(type){
     fillCategorySelect(el("category"), type, false);
     el("btnSubmit").className = "submit-btn " + type;
     el("btnSubmit").textContent = type==="income" ? "Добавить приход" : "Добавить расход";
-    const w = currentWallets().find(w=>w.name===state.selectedWallet);
-    if(w) el("amountCurrency").value = w.currency;
   }
+  updateCurrencySelectValue();
 }
 
 el("btnIncome").onclick = ()=>{ setType("income"); el("title").focus(); };
 el("btnExpense").onclick = ()=>{ setType("expense"); el("title").focus(); };
 el("btnTransfer").onclick = ()=> setType("transfer");
 
+function updateCurrencySelectValue(){
+  if(state.type === "transfer"){
+    const fromName = el("transferFrom").value;
+    const w = currentWallets().find(w=>w.name===fromName);
+    if(w) el("currencySelect").value = w.currency;
+    return;
+  }
+  if(state.manualCurrency){
+    el("currencySelect").value = state.manualCurrency;
+  } else {
+    const w = currentWallets().find(w=>w.name===state.selectedWallet);
+    el("currencySelect").value = w ? w.currency : "RUB";
+  }
+}
+el("currencySelect").addEventListener("change", ()=>{ state.manualCurrency = el("currencySelect").value; });
+
 function fillTransferWallets(){
   const fromSelect = el("transferFrom");
   fillWalletOptions(fromSelect);
   if(state.selectedWallet) fromSelect.value = state.selectedWallet;
   updateTransferToOptions();
-  fromSelect.onchange = updateTransferToOptions;
+  fromSelect.onchange = ()=>{ updateTransferToOptions(); updateCurrencySelectValue(); };
 }
 function updateTransferToOptions(){
   const fromName = el("transferFrom").value;
   const fromWallet = currentWallets().find(w=>w.name===fromName);
   const currency = fromWallet ? fromWallet.currency : null;
-  if(fromWallet) el("amountCurrency").value = fromWallet.currency;
   const options = currentWallets().filter(w=> w.name!==fromName && (!currency || w.currency===currency));
   el("transferTo").innerHTML = options.length
     ? options.map(w=>`<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)}</option>`).join("")
@@ -490,7 +495,9 @@ function updateTransferToOptions(){
 /* ---------- Имя сотрудника: спрашиваем один раз при первом запуске ---------- */
 
 function updateEmployeeDisplay(){
-  el("employeeDisplay").textContent = state.employeeName || "Сотрудник";
+  el("employeeDisplay").innerHTML = state.employeeName
+    ? escapeHtml(state.employeeName) + '<span class="hint">нажмите, чтобы сменить</span>'
+    : "Сотрудник";
 }
 function openEmployeeModal(mandatory){
   el("employeeModalTitle").textContent = mandatory ? "Как вас зовут?" : "Сменить сотрудника";
@@ -509,7 +516,7 @@ el("btnEmployeeSave").onclick = ()=>{
   hideModal("employeeBackdrop");
 };
 
-/* ---------- Кошельки: полоса выбора ---------- */
+/* ---------- Кошельки: полоса кошельков ---------- */
 
 function renderWalletStrip(){
   const wallets = currentWallets();
@@ -521,18 +528,16 @@ function renderWalletStrip(){
     const selected = state.selectedWallet === w.name ? "selected" : "";
     return `<div class="wallet-chip ${selected}" data-wallet="${escapeHtml(w.name)}">
       <div class="wname">${escapeHtml(w.name)}</div>
-      <div class="wcur">${currencySymbol(w.currency)}</div>
+      <div class="wcur">${w.currency}</div>
     </div>`;
   }).join("");
   wrap.querySelectorAll(".wallet-chip").forEach(node=>{
     node.onclick = ()=>{
       state.selectedWallet = node.getAttribute("data-wallet");
       localStorage.setItem(WALLET_KEY, state.selectedWallet);
+      state.manualCurrency = null;
       renderWalletStrip();
-      if(state.type !== "transfer"){
-        const w = currentWallets().find(w=>w.name===state.selectedWallet);
-        if(w) el("amountCurrency").value = w.currency;
-      }
+      updateCurrencySelectValue();
     };
   });
 }
@@ -734,6 +739,7 @@ function reconcileWithRemote(data){
   }
   renderWalletStrip();
   renderEntries();
+  updateCurrencySelectValue();
 }
 
 function updateSyncMetaTimestamp(){
@@ -782,11 +788,11 @@ async function submitEntry(){
   if(!validateForm()) return;
   if(state.type === "transfer"){ await submitTransfer(); return; }
 
+  const currency = el("currencySelect").value;
   const entry = {
     id: uid(), timestamp: new Date().toISOString(), type: state.type,
     employee: state.employeeName, title: el("title").value.trim(),
-    category: el("category").value, wallet: state.selectedWallet,
-    currency: el("amountCurrency").value,
+    category: el("category").value, wallet: state.selectedWallet, currency,
     amount: parseFloat(el("amount").value), comment: el("comment").value.trim(),
     photo: state.photo ? state.photo.dataUrl : null, photoUrl: null, status: "pending"
   };
@@ -796,6 +802,7 @@ async function submitEntry(){
 
   el("title").value=""; el("amount").value=""; el("comment").value="";
   state.photo = null; renderPhotoArea();
+  state.manualCurrency = null; updateCurrencySelectValue();
 
   await syncEntry(entry);
   refreshFromServer(false);
@@ -804,7 +811,8 @@ async function submitEntry(){
 async function submitTransfer(){
   const fromName = el("transferFrom").value;
   const toName = el("transferTo").value;
-  const currency = el("amountCurrency").value;
+  const wallet = currentWallets().find(w=>w.name===fromName);
+  const currency = wallet ? wallet.currency : "RUB";
   const amount = parseFloat(el("amount").value);
   const comment = el("comment").value.trim();
   const transferId = uid();
@@ -959,6 +967,10 @@ function openEditModal(id){
     el("editWallet").disabled = false;
   }
 
+  fillCurrencySelect(el("editCurrencySelect"));
+  el("editCurrencySelect").value = entry.currency || "RUB";
+  el("editCurrencySelect").disabled = isTransfer;
+
   el("editAmount").value = entry.amount;
   el("editComment").value = entry.comment || "";
   state.editPhoto = entry.photo ? { dataUrl: entry.photo, mime: null } : null;
@@ -977,6 +989,7 @@ el("btnEditSave").onclick = async ()=>{
   entry.title = el("editTitle").value.trim();
   entry.category = el("editCategory").value;
   entry.wallet = el("editWallet").value;
+  entry.currency = el("editCurrencySelect").value;
   entry.amount = parseFloat(el("editAmount").value) || entry.amount;
   entry.comment = el("editComment").value.trim();
   entry.status = "pending";
@@ -1006,8 +1019,8 @@ el("btnEditSave").onclick = async ()=>{
 el("btnEditDelete").onclick = ()=>{
   const entry = state.entries.find(e=>e.id===state.editingId);
   el("confirmDeleteText").textContent = entry && entry.transferId
-    ? "Это часть перевода — удалятся обе стороны, в обоих кошельках. Действие нельзя отменить."
-    : "Это действие нельзя отменить — запись будет удалена и из таблицы.";
+    ? "Удалятся обе стороны перевода. Действие нельзя отменить."
+    : "Это действие нельзя отменить.";
   state.deletingId = state.editingId;
   hideModal("editModalBackdrop");
   showModal("confirmDeleteBackdrop");
@@ -1042,6 +1055,7 @@ function showToast(text){
 loadCategoriesCache();
 loadWalletsCache();
 state.selectedWallet = localStorage.getItem(WALLET_KEY) || (currentWallets()[0] && currentWallets()[0].name) || null;
+fillCurrencySelect(el("currencySelect"));
 setType("income");
 loadEntries();
 renderWalletStrip();
