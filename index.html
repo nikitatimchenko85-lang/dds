@@ -29,7 +29,8 @@
     border-bottom:1px solid var(--border);
   }
   .header-top{display:flex; align-items:center; justify-content:space-between;}
-  header h1{margin:0; font-size:20px; font-weight:700;}
+  .employee-display{font-size:18px; font-weight:700; padding:2px 0;}
+  .employee-display .hint{font-size:11px; color:var(--muted); font-weight:400; display:block; margin-top:1px;}
   .refresh-btn{background:none; border:none; color:var(--muted); font-size:13px; padding:4px 8px;}
   .refresh-btn.spinning{opacity:.5;}
   .sync-meta{font-size:11px; color:var(--muted); margin-top:2px;}
@@ -150,14 +151,13 @@
     color:var(--text); padding:10px 18px; border-radius:20px; font-size:13px; z-index:200; border:1px solid var(--border);
   }
 
-  .csv-link{display:block; text-align:center; margin-top:18px; color:var(--muted); font-size:12px;}
 </style>
 </head>
 <body>
 
 <header>
   <div class="header-top">
-    <h1>ДДС</h1>
+    <div class="employee-display" id="employeeDisplay">Сотрудник</div>
     <button class="refresh-btn" id="btnRefresh">Обновить</button>
   </div>
   <div class="sync-meta" id="syncMeta">Загрузка...</div>
@@ -169,11 +169,6 @@
 </header>
 
 <main>
-
-  <div class="field">
-    <label>Сотрудник<span class="req">*</span></label>
-    <input type="text" id="employee" placeholder="Имя сотрудника">
-  </div>
 
   <div class="type-toggle">
     <button class="type-btn income active" id="btnIncome">Доход</button>
@@ -219,8 +214,6 @@
     <button id="btnRetry" style="display:none;">Повторить отправку</button>
   </div>
   <div id="entriesList"></div>
-
-  <a class="csv-link" href="#" id="exportCsv">Экспорт в CSV</a>
 </main>
 
 <div class="camera-overlay" id="cameraOverlay" style="display:none;">
@@ -247,10 +240,6 @@
       </select>
     </div>
     <div class="field">
-      <label>Сотрудник</label>
-      <input type="text" id="editEmployee">
-    </div>
-    <div class="field">
       <label>Наименование</label>
       <input type="text" id="editTitle">
     </div>
@@ -265,6 +254,11 @@
     <div class="field">
       <label>Комментарий</label>
       <textarea id="editComment"></textarea>
+    </div>
+    <div class="field">
+      <label>Фото чека</label>
+      <div id="editPhotoArea"></div>
+      <input type="file" id="editGalleryInput" accept="image/*" style="display:none">
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" id="btnEditCancel">Отмена</button>
@@ -285,6 +279,20 @@
   </div>
 </div>
 
+<div id="employeeBackdrop" class="modal-backdrop" style="display:none;">
+  <div class="modal">
+    <h3 id="employeeModalTitle">Как вас зовут?</h3>
+    <p id="employeeModalHint">Это нужно один раз — дальше приложение будет запоминать вас на этом телефоне.</p>
+    <div class="field" style="margin-top:14px;">
+      <input type="text" id="employeeNameInput" placeholder="Имя сотрудника">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="btnEmployeeCancel" style="display:none;">Отмена</button>
+      <button class="btn-save" id="btnEmployeeSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ======================= НАСТРОЙКИ ======================= */
 
@@ -294,7 +302,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcGRHM_6KHUJoySM4dU
 // Это простая защита от случайного/бездумного обращения к URL, а не полноценная
 // авторизация: любой, кто откроет исходный код этого файла, может увидеть токен.
 // Держите ссылку на приложение и сам файл вне публичного доступа.
-const API_TOKEN = "СМЕНИТЕ_ЭТОТ_ТОКЕН";
+const API_TOKEN = "HpR5SMj11iYfuh6apsMQETU-JOOhCkg3";
 
 // Через сколько мс считать неподтверждённую отправку сбоем и предлагать повтор
 const UNCONFIRMED_TIMEOUT_MS = 90000;
@@ -353,16 +361,45 @@ function setType(type){
 el("btnIncome").onclick = ()=> setType("income");
 el("btnExpense").onclick = ()=> setType("expense");
 
-/* запоминаем последнее имя сотрудника */
-el("employee").value = localStorage.getItem("dds_last_employee") || "";
-el("employee").addEventListener("input", ()=>{
-  localStorage.setItem("dds_last_employee", el("employee").value);
-});
+/* ---------- Имя сотрудника: спрашиваем один раз при первом запуске ---------- */
+
+const EMPLOYEE_KEY = "dds_employee_name";
+
+function updateEmployeeDisplay(){
+  el("employeeDisplay").innerHTML = state.employeeName
+    ? escapeHtml(state.employeeName) + '<span class="hint">нажмите, чтобы сменить</span>'
+    : "Сотрудник";
+}
+
+function openEmployeeModal(mandatory){
+  el("employeeModalTitle").textContent = mandatory ? "Как вас зовут?" : "Сменить сотрудника";
+  el("employeeModalHint").textContent = mandatory
+    ? "Это нужно один раз — дальше приложение будет запоминать вас на этом телефоне."
+    : "Изменится имя, которое сохраняется в записях с этого телефона.";
+  el("employeeNameInput").value = state.employeeName || "";
+  el("btnEmployeeCancel").style.display = mandatory ? "none" : "inline";
+  el("employeeBackdrop").style.display = "flex";
+  state.employeeModalMandatory = mandatory;
+}
+el("employeeDisplay").onclick = ()=> openEmployeeModal(false);
+el("btnEmployeeCancel").onclick = ()=>{ el("employeeBackdrop").style.display = "none"; };
+el("btnEmployeeSave").onclick = ()=>{
+  const name = el("employeeNameInput").value.trim();
+  if(!name){ showToast("Введите имя"); return; }
+  state.employeeName = name;
+  localStorage.setItem(EMPLOYEE_KEY, name);
+  updateEmployeeDisplay();
+  el("employeeBackdrop").style.display = "none";
+};
+
+state.employeeName = localStorage.getItem(EMPLOYEE_KEY) || "";
+updateEmployeeDisplay();
+if(!state.employeeName) openEmployeeModal(true);
 
 /* ---------- Фото: камера ---------- */
 
 function bindPhotoButtons(){
-  el("btnCamera").onclick = openCamera;
+  el("btnCamera").onclick = ()=> openCamera("add");
   el("btnGallery").onclick = ()=> el("galleryInput").click();
 }
 bindPhotoButtons();
@@ -375,7 +412,21 @@ el("galleryInput").onchange = (e)=>{
   reader.readAsDataURL(file);
 };
 
-async function openCamera(){
+el("editGalleryInput").onchange = (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    state.editPhoto = { dataUrl: reader.result, mime: file.type };
+    state.editPhotoUrl = null;
+    state.editPhotoChanged = true;
+    renderEditPhotoArea();
+  };
+  reader.readAsDataURL(file);
+};
+
+async function openCamera(target){
+  state.cameraTarget = target || "add";
   el("cameraOverlay").style.display = "flex";
   try{
     state.stream = await navigator.mediaDevices.getUserMedia({
@@ -394,7 +445,8 @@ function closeCamera(){
 el("btnCameraClose").onclick = closeCamera;
 el("btnCameraSwitch").onclick = ()=>{
   state.facingMode = state.facingMode === "environment" ? "user" : "environment";
-  closeCamera(); openCamera();
+  const target = state.cameraTarget;
+  closeCamera(); openCamera(target);
 };
 el("btnShutter").onclick = ()=>{
   const video = el("cameraVideo");
@@ -403,7 +455,14 @@ el("btnShutter").onclick = ()=>{
   const ctx = canvas.getContext("2d");
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-  setPhoto(dataUrl, "image/jpeg");
+  if(state.cameraTarget === "edit"){
+    state.editPhoto = { dataUrl, mime:"image/jpeg" };
+    state.editPhotoUrl = null;
+    state.editPhotoChanged = true;
+    renderEditPhotoArea();
+  } else {
+    setPhoto(dataUrl, "image/jpeg");
+  }
   closeCamera();
 };
 
@@ -427,6 +486,32 @@ function renderPhotoArea(){
         <button type="button" class="photo-btn" id="btnGallery">Галерея</button>
       </div>`;
     bindPhotoButtons();
+  }
+}
+
+function renderEditPhotoArea(){
+  const area = el("editPhotoArea");
+  const previewSrc = state.editPhoto ? state.editPhoto.dataUrl : state.editPhotoUrl;
+  if(previewSrc){
+    area.innerHTML = `
+      <div class="photo-preview">
+        <img src="${previewSrc}">
+        <button type="button" class="photo-remove" id="btnEditRemovePhoto">✕</button>
+      </div>`;
+    el("btnEditRemovePhoto").onclick = ()=>{
+      state.editPhoto = null;
+      state.editPhotoUrl = null;
+      state.editPhotoChanged = true;
+      renderEditPhotoArea();
+    };
+  } else {
+    area.innerHTML = `
+      <div class="photo-field">
+        <button type="button" class="photo-btn" id="btnEditCamera">Камера</button>
+        <button type="button" class="photo-btn" id="btnEditGallery">Галерея</button>
+      </div>`;
+    el("btnEditCamera").onclick = ()=> openCamera("edit");
+    el("btnEditGallery").onclick = ()=> el("editGalleryInput").click();
   }
 }
 
@@ -506,6 +591,8 @@ function reconcileWithRemote(data){
     saveCategoriesCache();
     fillCategorySelect(el("category"), state.type, true);
   }
+  if(data.totals) state.remoteTotals = data.totals;
+  if(typeof data.totalCount === "number") state.totalCount = data.totalCount;
   if(data.rows){
     const remoteEntries = data.rows.map(mapRemoteRow);
     const remoteIds = new Set(remoteEntries.map(e=>e.id));
@@ -533,7 +620,7 @@ async function refreshFromServer(manual){
   try{
     const data = await fetchFromServer();
     reconcileWithRemote(data);
-    el("syncMeta").textContent = "Обновлено " + new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+    updateSyncMetaTimestamp();
   }catch(err){
     el("syncMeta").textContent = "Не удалось обновить с сервера — показаны локальные данные";
   }
@@ -542,10 +629,16 @@ async function refreshFromServer(manual){
 }
 el("btnRefresh").onclick = ()=> refreshFromServer(true);
 
+function updateSyncMetaTimestamp(){
+  const time = "Обновлено " + new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+  const count = state.totalCount != null ? " · всего записей: " + state.totalCount.toLocaleString("ru-RU") : "";
+  el("syncMeta").textContent = time + count;
+}
+
 /* ---------- Добавление записи ---------- */
 
 function validateForm(){
-  if(!el("employee").value.trim()){ showToast("Укажите сотрудника"); return false; }
+  if(!state.employeeName){ openEmployeeModal(true); return false; }
   if(!el("title").value.trim()){ showToast("Укажите наименование"); return false; }
   const amountVal = parseFloat(el("amount").value);
   if(!amountVal || amountVal <= 0){ showToast("Введите сумму"); return false; }
@@ -559,7 +652,7 @@ async function submitEntry(){
     id: uid(),
     timestamp: new Date().toISOString(),
     type: state.type,
-    employee: el("employee").value.trim(),
+    employee: state.employeeName,
     title: el("title").value.trim(),
     category: el("category").value,
     amount: parseFloat(el("amount").value),
@@ -636,9 +729,13 @@ el("btnSubmit").onclick = submitEntry;
 /* ---------- Отрисовка списка и итогов ---------- */
 
 function renderTotals(){
-  let inc=0, exp=0;
+  let inc = state.remoteTotals ? state.remoteTotals.income : 0;
+  let exp = state.remoteTotals ? state.remoteTotals.expense : 0;
+  // серверные итоги уже включают всё подтверждённое; добавляем только то,
+  // что ещё не подтвердилось (только что добавлено/в процессе отправки),
+  // чтобы баланс обновлялся мгновенно, а не ждал следующего опроса
   state.entries.forEach(e=>{
-    if(e.deleted) return;
+    if(e.deleted || e.status === "synced") return;
     if(e.type==="income") inc += e.amount; else exp += e.amount;
   });
   el("sumIncome").textContent = fmt(inc);
@@ -657,7 +754,8 @@ function renderEntries(){
     return;
   }
   list.innerHTML = visible.map(e=>{
-    const thumb = e.photo ? `<img class="thumb" src="${e.photo}">` : "";
+    const thumbSrc = e.photo || e.photoUrl;
+    const thumb = thumbSrc ? `<img class="thumb" src="${thumbSrc}">` : "";
     const dot = e.status==="error" ? `<span class="dot error"></span>` : e.status==="pending" ? `<span class="dot pending"></span>` : "";
     const d = new Date(e.timestamp);
     const dateStr = d.toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"}) + " " + d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
@@ -689,12 +787,15 @@ function openEditModal(id){
   if(!entry) return;
   state.editingId = id;
   el("editType").value = entry.type;
-  el("editEmployee").value = entry.employee || "";
   el("editTitle").value = entry.title || "";
   fillCategorySelect(el("editCategory"), entry.type, false);
   el("editCategory").value = entry.category;
   el("editAmount").value = entry.amount;
   el("editComment").value = entry.comment || "";
+  state.editPhoto = entry.photo ? { dataUrl: entry.photo, mime: null } : null;
+  state.editPhotoUrl = (!entry.photo && entry.photoUrl) ? entry.photoUrl : null;
+  state.editPhotoChanged = false;
+  renderEditPhotoArea();
   el("editModalBackdrop").style.display = "flex";
 }
 el("editType").onchange = ()=> fillCategorySelect(el("editCategory"), el("editType").value, false);
@@ -704,16 +805,30 @@ el("btnEditSave").onclick = async ()=>{
   const entry = state.entries.find(e=>e.id===state.editingId);
   if(!entry) return;
   entry.type = el("editType").value;
-  entry.employee = el("editEmployee").value.trim();
   entry.title = el("editTitle").value.trim();
   entry.category = el("editCategory").value;
   entry.amount = parseFloat(el("editAmount").value) || entry.amount;
   entry.comment = el("editComment").value.trim();
   entry.status = "pending";
+
+  const payload = { action:"edit", id:entry.id, type:entry.type, employee:entry.employee, title:entry.title, category:entry.category, amount:entry.amount, comment:entry.comment };
+  if(state.editPhotoChanged){
+    if(state.editPhoto){
+      payload.photoBase64 = state.editPhoto.dataUrl.split(",")[1];
+      payload.photoMime = state.editPhoto.mime || state.editPhoto.dataUrl.split(";")[0].split(":")[1];
+      entry.photo = state.editPhoto.dataUrl;
+      entry.photoUrl = null;
+    } else {
+      payload.removePhoto = true;
+      entry.photo = null;
+      entry.photoUrl = null;
+    }
+  }
+
   saveEntries(); renderEntries(); renderTotals();
   el("editModalBackdrop").style.display="none";
   try{
-    await sendToServer({ action:"edit", id:entry.id, type:entry.type, employee:entry.employee, title:entry.title, category:entry.category, amount:entry.amount, comment:entry.comment });
+    await sendToServer(payload);
     entry.status = "pending";
     entry.sentAt = Date.now();
   }catch(e){ entry.status="error"; el("btnRetry").style.display="inline"; }
@@ -741,22 +856,6 @@ el("btnConfirmDeleteOk").onclick = async ()=>{
   }catch(e){ /* при ошибке запись останется скрытой локально, но появится снова при следующем обновлении с сервера, если удаление не прошло */ }
   state.deletingId = null;
   refreshFromServer(false);
-};
-
-/* ---------- CSV экспорт ---------- */
-
-el("exportCsv").onclick = (e)=>{
-  e.preventDefault();
-  const rows = [["Дата","Тип","Сотрудник","Наименование","Статья","Сумма","Комментарий"]];
-  state.entries.filter(x=>!x.deleted).forEach(en=>{
-    rows.push([en.timestamp, en.type==="income"?"Доход":"Расход", en.employee||"", en.title||"", en.category, en.amount, en.comment||""]);
-  });
-  const csv = rows.map(r=> r.map(v=> `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
-  const blob = new Blob(["\ufeff"+csv], {type:"text/csv;charset=utf-8"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = "dds.csv"; a.click();
-  URL.revokeObjectURL(url);
 };
 
 function showToast(text){
