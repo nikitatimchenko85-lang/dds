@@ -15,23 +15,25 @@
     --income:#1fae63;
     --expense:#e2483d;
     --transfer:#3d6ae2;
-    --transfer-soft:#eef1fb;
     --accent:#3d6ae2;
     --radius-sm:14px;
     --shadow:0 1px 2px rgba(20,20,30,.05), 0 8px 20px rgba(20,20,30,.06);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html, body{ margin:0; min-height:100vh; }
   body{
-    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    display:flex; flex-direction:column; min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     background:var(--bg); color:var(--text);
   }
   button, input, select, textarea{ font-family:inherit; }
   button{ cursor:pointer; }
 
+  .fixed-header{ position:sticky; top:0; z-index:6; }
+
   /* ---------- Верхний светлый блок ---------- */
   .top-panel{
     background:var(--card); border-radius:0 0 26px 26px; padding:16px 16px 16px;
-    position:sticky; top:0; z-index:5;
   }
   .header-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
   .employee-display{font-size:17px; font-weight:700; padding:2px 0; cursor:pointer;}
@@ -44,7 +46,7 @@
   .wallet-chip{
     flex:0 0 auto; background:var(--bg); border:2px solid transparent; border-radius:var(--radius-sm); padding:10px 16px;
   }
-  .wallet-chip.selected{ border-color:var(--accent); }
+  .wallet-chip.selected{ background:var(--income); border-color:var(--income); }
   .wallet-chip .wname{font-size:13px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;}
 
   /* ---------- Чёрная зона Приход/Перевод/Расход ---------- */
@@ -55,19 +57,22 @@
   .type-btn{
     flex:1; max-width:150px; padding:13px 8px; border-radius:999px; border:none;
     background:rgba(255,255,255,.08); color:rgba(255,255,255,.6); font-size:14px; font-weight:700;
-    display:flex; align-items:center; justify-content:center; gap:5px;
+    display:flex; align-items:center; justify-content:center; gap:6px;
   }
+  .type-btn .arrow{font-size:14px; line-height:1;}
   .type-btn.income.active{background:var(--income); color:#fff;}
   .type-btn.expense.active{background:var(--expense); color:#fff;}
   .type-btn.transfer{
     flex:0 0 auto; width:46px; height:46px; border-radius:50%; background:#fff; color:var(--card-dark);
-    font-size:17px; margin-top:-30px; box-shadow:0 6px 16px rgba(0,0,0,.45); border:5px solid var(--bg);
+    display:flex; align-items:center; justify-content:center;
+    margin-top:-30px; box-shadow:0 6px 16px rgba(0,0,0,.45); border:5px solid var(--bg);
   }
   .type-btn.transfer.active{background:var(--transfer); color:#fff;}
 
   /* ---------- Нижний светлый блок ---------- */
   .content-panel{
-    background:var(--card); border-radius:26px 26px 0 0; padding:16px 16px 24px; min-height:60vh;
+    flex:1; display:flex; flex-direction:column;
+    background:var(--card); border-radius:26px 26px 0 0; padding:16px 16px 24px;
   }
 
   .tabs{display:flex; gap:8px; background:var(--bg); border-radius:999px; padding:5px; margin-bottom:18px;}
@@ -98,6 +103,11 @@
   }
   select:disabled{opacity:.55;}
 
+  .category-input{
+    width:100%; padding:18px 16px; border-radius:12px; border:1px solid var(--border);
+    background:var(--card); color:var(--text); font-size:17px;
+  }
+
   .autocomplete-list{
     position:absolute; left:0; right:0; top:100%; background:var(--card); border:1px solid var(--border);
     border-radius:12px; margin-top:4px; max-height:200px; overflow-y:auto; z-index:20; box-shadow:var(--shadow);
@@ -108,14 +118,16 @@
   .autocomplete-item:last-child{border-bottom:none;}
 
   .amount-row{display:flex; gap:8px; margin-bottom:14px;}
-  .currency-pill{
-    flex:0 0 auto; background:var(--card-dark); color:#fff; border:none; border-radius:12px;
-    padding:0 16px; font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center;
+  .currency-select{
+    flex:0 0 96px; border-radius:12px; border:none; background:var(--card-dark); color:#fff;
+    font-size:15px; font-weight:700; padding:0 24px 0 12px; appearance:none; -webkit-appearance:none;
+    text-align:center; text-align-last:center;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat; background-position:right 8px center;
   }
-  .currency-pill:disabled{opacity:.4;}
   .amount-input{flex:1; font-size:26px; font-weight:800; text-align:center; border-radius:12px; border:1px solid var(--border); background:var(--card); padding:14px; width:100%;}
 
-  .transfer-row{display:flex; align-items:center; gap:8px;}
+  .transfer-row{display:flex; align-items:center; gap:8px; margin-bottom:14px;}
   .transfer-row .plain-field{flex:1; margin-bottom:0;}
   .transfer-arrow{color:var(--muted); font-size:18px;}
 
@@ -193,19 +205,26 @@
 </head>
 <body>
 
-<div class="top-panel">
-  <div class="header-top">
-    <div class="employee-display" id="employeeDisplay">Сотрудник</div>
-    <button class="refresh-btn" id="btnRefresh">Обновить</button>
+<div class="fixed-header">
+  <div class="top-panel">
+    <div class="header-top">
+      <div class="employee-display" id="employeeDisplay">Сотрудник</div>
+      <button class="refresh-btn" id="btnRefresh">Обновить</button>
+    </div>
+    <div class="sync-meta" id="syncMeta">Загрузка...</div>
+    <div class="wallet-strip" id="walletStrip"></div>
   </div>
-  <div class="sync-meta" id="syncMeta">Загрузка...</div>
-  <div class="wallet-strip" id="walletStrip"></div>
-</div>
 
-<div class="type-zone">
-  <button class="type-btn income active" id="btnIncome">↓ Приход</button>
-  <button class="type-btn transfer" id="btnTransfer">⇄</button>
-  <button class="type-btn expense" id="btnExpense">Расход ↑</button>
+  <div class="type-zone">
+    <button class="type-btn income active" id="btnIncome">Приход <span class="arrow">↓</span></button>
+    <button class="type-btn transfer" id="btnTransfer">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+        <polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+      </svg>
+    </button>
+    <button class="type-btn expense" id="btnExpense">Расход <span class="arrow">↑</span></button>
+  </div>
 </div>
 
 <div class="content-panel">
@@ -222,7 +241,7 @@
         <label for="title">Наименование<span class="req">*</span></label>
       </div>
       <div class="plain-field">
-        <input type="text" id="categoryInput" placeholder="Статья" autocomplete="off">
+        <input type="text" class="category-input" id="categoryInput" placeholder="Статья" autocomplete="off">
         <div class="autocomplete-list" id="categorySuggestions"></div>
       </div>
     </div>
@@ -240,7 +259,7 @@
     </div>
 
     <div class="amount-row">
-      <button type="button" class="currency-pill" id="currencyPill">₽ RUB</button>
+      <select id="currencySelect" class="currency-select"></select>
       <input type="number" inputmode="decimal" id="amount" class="amount-input" placeholder="0" enterkeyhint="done">
     </div>
 
@@ -300,14 +319,14 @@
       <label for="editTitle">Наименование</label>
     </div>
     <div class="plain-field">
-      <input type="text" id="editCategoryInput" placeholder="Статья" autocomplete="off">
+      <input type="text" class="category-input" id="editCategoryInput" placeholder="Статья" autocomplete="off">
       <div class="autocomplete-list" id="editCategorySuggestions"></div>
     </div>
     <div class="plain-field">
       <select id="editWallet"></select>
     </div>
     <div class="amount-row">
-      <button type="button" class="currency-pill" id="editCurrencyPill">₽ RUB</button>
+      <select id="editCurrencySelect" class="currency-select"></select>
       <input type="number" id="editAmount" class="amount-input">
     </div>
     <div class="field-float">
@@ -400,6 +419,9 @@ function fillWalletOptions(select){
     `<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)}</option>`
   ).join("");
 }
+function fillCurrencySelect(select){
+  select.innerHTML = CURRENCIES.map(c=> `<option value="${c}">${currencySymbol(c)} ${c}</option>`).join("");
+}
 
 /* ---------- Автодополнение статей ---------- */
 
@@ -446,7 +468,6 @@ function setType(type){
   el("normalFields").style.display = isTransfer ? "none" : "";
   el("transferFields").style.display = isTransfer ? "" : "none";
   el("photoFieldWrapper").style.display = isTransfer ? "none" : "";
-  el("currencyPill").style.display = isTransfer ? "none" : "";
 
   if(isTransfer){
     el("btnSubmit").className = "submit-btn transfer";
@@ -457,20 +478,16 @@ function setType(type){
     el("btnSubmit").className = "submit-btn " + type;
     el("btnSubmit").textContent = type==="income" ? "Добавить приход" : "Добавить расход";
   }
-  updateCurrencyPillValue();
+  updateCurrencySelectValue();
 }
 
 el("btnIncome").onclick = ()=>{ setType("income"); el("title").focus(); };
 el("btnExpense").onclick = ()=>{ setType("expense"); el("title").focus(); };
 el("btnTransfer").onclick = ()=> setType("transfer");
 
-function setCurrencyPill(pillEl, code){
-  pillEl.textContent = currencySymbol(code) + " " + code;
-  pillEl.dataset.code = code;
-}
-function updateCurrencyPillValue(){
+function updateCurrencySelectValue(){
   let code = "RUB";
-  if(state.type === "transfer"){
+  if(state.type === "transfer" && !state.manualCurrency){
     const fromName = el("transferFrom").value;
     const w = currentWallets().find(w=>w.name===fromName);
     if(w) code = w.currency;
@@ -480,22 +497,16 @@ function updateCurrencyPillValue(){
     const w = currentWallets().find(w=>w.name===state.selectedWallet);
     if(w) code = w.currency;
   }
-  setCurrencyPill(el("currencyPill"), code);
+  el("currencySelect").value = code;
 }
-el("currencyPill").onclick = ()=>{
-  if(state.type === "transfer") return;
-  const idx = CURRENCIES.indexOf(el("currencyPill").dataset.code);
-  const next = CURRENCIES[(idx+1) % CURRENCIES.length];
-  state.manualCurrency = next;
-  setCurrencyPill(el("currencyPill"), next);
-};
+el("currencySelect").addEventListener("change", ()=>{ state.manualCurrency = el("currencySelect").value; });
 
 function fillTransferWallets(){
   const fromSelect = el("transferFrom");
   fillWalletOptions(fromSelect);
   if(state.selectedWallet) fromSelect.value = state.selectedWallet;
   updateTransferToOptions();
-  fromSelect.onchange = ()=>{ updateTransferToOptions(); updateCurrencyPillValue(); };
+  fromSelect.onchange = ()=>{ updateTransferToOptions(); state.manualCurrency = null; updateCurrencySelectValue(); };
 }
 function updateTransferToOptions(){
   const fromName = el("transferFrom").value;
@@ -551,7 +562,7 @@ function renderWalletStrip(){
       localStorage.setItem(WALLET_KEY, state.selectedWallet);
       state.manualCurrency = null;
       renderWalletStrip();
-      updateCurrencyPillValue();
+      updateCurrencySelectValue();
     };
   });
 }
@@ -748,7 +759,7 @@ function reconcileWithRemote(data){
   }
   renderWalletStrip();
   renderEntries();
-  updateCurrencyPillValue();
+  updateCurrencySelectValue();
 }
 
 function updateSyncMetaTimestamp(){
@@ -795,7 +806,7 @@ async function submitEntry(){
   if(!validateForm()) return;
   if(state.type === "transfer"){ await submitTransfer(); return; }
 
-  const currency = el("currencyPill").dataset.code || "RUB";
+  const currency = el("currencySelect").value;
   const entry = {
     id: uid(), timestamp: new Date().toISOString(), type: state.type,
     employee: state.employeeName, title: el("title").value.trim(),
@@ -809,7 +820,7 @@ async function submitEntry(){
 
   el("title").value=""; el("categoryInput").value=""; el("amount").value=""; el("comment").value="";
   state.photo = null; renderPhotoArea();
-  state.manualCurrency = null; updateCurrencyPillValue();
+  state.manualCurrency = null; updateCurrencySelectValue();
 
   await syncEntry(entry);
   refreshFromServer(false);
@@ -818,8 +829,7 @@ async function submitEntry(){
 async function submitTransfer(){
   const fromName = el("transferFrom").value;
   const toName = el("transferTo").value;
-  const wallet = currentWallets().find(w=>w.name===fromName);
-  const currency = wallet ? wallet.currency : "RUB";
+  const currency = el("currencySelect").value;
   const amount = parseFloat(el("amount").value);
   const comment = el("comment").value.trim();
   const transferId = uid();
@@ -835,6 +845,7 @@ async function submitTransfer(){
   state.entries.unshift(outEntry, inEntry);
   saveEntries(); renderEntries();
   el("amount").value=""; el("comment").value="";
+  state.manualCurrency = null; updateCurrencySelectValue();
 
   await sendTransfer(transferId, fromName, toName, amount, comment, ts, currency, outEntry, inEntry);
   refreshFromServer(false);
@@ -970,12 +981,9 @@ function openEditModal(id){
     el("editWallet").disabled = false;
   }
 
-  setCurrencyPill(el("editCurrencyPill"), entry.currency || "RUB");
-  el("editCurrencyPill").disabled = isTransfer;
-  el("editCurrencyPill").onclick = isTransfer ? null : ()=>{
-    const idx = CURRENCIES.indexOf(el("editCurrencyPill").dataset.code);
-    setCurrencyPill(el("editCurrencyPill"), CURRENCIES[(idx+1) % CURRENCIES.length]);
-  };
+  fillCurrencySelect(el("editCurrencySelect"));
+  el("editCurrencySelect").value = entry.currency || "RUB";
+  el("editCurrencySelect").disabled = isTransfer;
 
   el("editAmount").value = entry.amount;
   el("editComment").value = entry.comment || "";
@@ -985,6 +993,7 @@ function openEditModal(id){
   renderEditPhotoArea();
   el("editModalBackdrop").style.display = "flex";
 }
+el("editType").onchange = ()=>{}; // тип у существующей записи не меняется свободно; статья вводится вручную
 el("btnEditCancel").onclick = ()=>{ el("editModalBackdrop").style.display = "none"; };
 
 el("btnEditSave").onclick = async ()=>{
@@ -994,7 +1003,7 @@ el("btnEditSave").onclick = async ()=>{
   entry.title = el("editTitle").value.trim();
   entry.category = el("editCategoryInput").value.trim();
   entry.wallet = el("editWallet").value;
-  entry.currency = el("editCurrencyPill").dataset.code;
+  entry.currency = el("editCurrencySelect").value;
   entry.amount = parseFloat(el("editAmount").value) || entry.amount;
   entry.comment = el("editComment").value.trim();
   entry.status = "pending";
@@ -1060,6 +1069,7 @@ function showToast(text){
 loadCategoriesCache();
 loadWalletsCache();
 state.selectedWallet = localStorage.getItem(WALLET_KEY) || (currentWallets()[0] && currentWallets()[0].name) || null;
+fillCurrencySelect(el("currencySelect"));
 setType("income");
 loadEntries();
 renderWalletStrip();
