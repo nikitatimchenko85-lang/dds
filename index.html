@@ -2,11 +2,11 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>ДДС</title>
 <style>
   :root{
-    --bg:#0a0a0c;
+    --bg:#ffffff;
     --card:#ffffff;
     --card-dark:#15161b;
     --border:#e6e6ec;
@@ -20,78 +20,70 @@
     --shadow:0 1px 2px rgba(20,20,30,.05), 0 8px 20px rgba(20,20,30,.06);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html, body{ margin:0; height:100%; overflow:hidden; }
+  html, body{ margin:0; }
   body{
-    display:flex; flex-direction:column; height:100vh;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     background:var(--bg); color:var(--text);
   }
   button, input, select, textarea{ font-family:inherit; }
   button{ cursor:pointer; }
 
-  .fixed-header{ flex:0 0 auto; }
-
-  /* ---------- Верхний светлый блок ---------- */
+  /* ---------- Верхний чёрный блок ---------- */
   .top-panel{
-    background:var(--card); border-radius:0 0 26px 26px; padding:16px 16px 16px;
+    background:var(--card-dark); border-radius:0 0 26px 26px;
+    padding:calc(16px + env(safe-area-inset-top)) 16px 16px;
+    position:sticky; top:0; z-index:6;
   }
   .header-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
-  .employee-display{font-size:17px; font-weight:700; padding:2px 0; cursor:pointer;}
-  .employee-display .hint{font-size:11px; color:var(--muted); font-weight:400; display:block; margin-top:1px;}
-  .refresh-btn{background:none; border:none; color:var(--muted); padding:6px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
-  .sync-meta{font-size:11px; color:var(--muted); margin-top:6px;}
+  .employee-display{font-size:17px; font-weight:700; color:#fff; padding:2px 0; cursor:pointer;}
+  .employee-display .hint{font-size:11px; color:rgba(255,255,255,.5); font-weight:400; display:block; margin-top:1px;}
+  .refresh-btn{background:none; border:none; color:rgba(255,255,255,.6); padding:6px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
+  .sync-meta{font-size:11px; color:rgba(255,255,255,.45); margin-top:6px;}
 
   .wallet-strip{display:flex; gap:10px; overflow-x:auto; padding:12px 2px 0; -webkit-overflow-scrolling:touch;}
   .wallet-strip::-webkit-scrollbar{display:none;}
   .wallet-chip{
-    flex:0 0 auto; background:var(--bg); border:2px solid transparent; border-radius:var(--radius-sm); padding:10px 16px;
+    flex:0 0 auto; background:rgba(255,255,255,.08); border:2px solid transparent; border-radius:var(--radius-sm); padding:10px 16px;
   }
-  .wallet-chip.selected{ background:var(--income); border-color:var(--income); }
+  .wallet-chip.selected{ background:var(--income); }
   .wallet-chip .wname{font-size:13px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;}
 
-  /* ---------- Чёрная зона Приход/Перевод/Расход ---------- */
+  /* ---------- Чёрный блок Приход/Перевод/Расход ---------- */
   .type-zone{
-    display:flex; align-items:center; justify-content:center; gap:10px;
-    padding:16px 16px 26px; background:var(--bg);
+    display:flex; align-items:center; gap:6px; background:var(--card-dark);
+    border-radius:999px; padding:6px; margin:16px 16px 18px;
   }
   .type-btn{
-    flex:1; max-width:150px; padding:13px 8px; border-radius:999px; border:none;
-    background:rgba(255,255,255,.08); color:rgba(255,255,255,.6); font-size:14px; font-weight:700;
+    flex:1; padding:13px 8px; border-radius:999px; border:none;
+    background:transparent; color:rgba(255,255,255,.5); font-size:14px; font-weight:700;
     display:flex; align-items:center; justify-content:center; gap:6px;
   }
   .type-btn .arrow{font-size:14px; line-height:1;}
   .type-btn.income.active{background:var(--income); color:#fff;}
   .type-btn.expense.active{background:var(--expense); color:#fff;}
   .type-btn.transfer{
-    flex:0 0 auto; width:46px; height:46px; border-radius:50%; background:#fff; color:var(--card-dark);
+    flex:0 0 auto; width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.12); color:#fff;
     display:flex; align-items:center; justify-content:center;
   }
-  .type-btn.transfer.active{background:var(--transfer); color:#fff;}
+  .type-btn.transfer.active{background:var(--transfer);}
 
-  /* ---------- Нижний светлый блок ---------- */
-  .content-panel{
-    flex:1 1 auto; min-height:0; display:flex; flex-direction:column;
-    background:var(--card); border-radius:26px 26px 0 0; padding:16px 16px 0;
-  }
+  /* ---------- Контент на белом фоне ---------- */
+  .content{padding:0 16px 24px;}
 
-  .tabs{flex:0 0 auto; display:flex; gap:8px; background:var(--bg); border-radius:999px; padding:5px; margin-bottom:18px;}
-  .tab-btn{flex:1; padding:11px; border-radius:999px; border:none; background:transparent; color:rgba(255,255,255,.55); font-size:13px; font-weight:700;}
-  .tab-btn.active{background:#fff; color:var(--text);}
-
-  .tab-pane{flex:1 1 auto; min-height:0; overflow-y:auto; padding-bottom:20px; -webkit-overflow-scrolling:touch;}
+  .tabs{display:flex; gap:8px; background:#f1f1f5; border-radius:999px; padding:5px; margin-bottom:18px;}
+  .tab-btn{flex:1; padding:11px; border-radius:999px; border:none; background:transparent; color:var(--muted); font-size:13px; font-weight:700;}
+  .tab-btn.active{background:var(--card-dark); color:#fff;}
 
   .field-float{position:relative; margin-bottom:14px;}
   .field-float input, .field-float textarea{
     width:100%; padding:19px 14px 9px; border-radius:12px; border:1px solid var(--border);
     background:var(--card); color:var(--text); font-size:16px;
   }
-  .field-float textarea{min-height:58px; resize:vertical; font-family:inherit;}
   .field-float label{
     position:absolute; left:15px; top:19px; font-size:15px; color:var(--muted); pointer-events:none;
   }
   .field-float label .req{color:var(--expense); margin-left:2px;}
-  .field-float input:focus + label, .field-float input:not(:placeholder-shown) + label,
-  .field-float textarea:focus + label, .field-float textarea:not(:placeholder-shown) + label{
+  .field-float input:focus + label, .field-float input:not(:placeholder-shown) + label{
     top:7px; font-size:10.5px; text-transform:uppercase; letter-spacing:.03em;
   }
 
@@ -104,11 +96,10 @@
   }
   select:disabled{opacity:.55;}
 
-  .category-input{
+  .lookup-input{
     width:100%; padding:18px 16px; border-radius:12px; border:1px solid var(--border);
     background:var(--card); color:var(--text); font-size:17px;
   }
-
   .autocomplete-list{
     position:absolute; left:0; right:0; top:100%; background:var(--card); border:1px solid var(--border);
     border-radius:12px; margin-top:4px; max-height:200px; overflow-y:auto; z-index:20; box-shadow:var(--shadow);
@@ -120,17 +111,24 @@
 
   .amount-row{display:flex; gap:8px; margin-bottom:14px;}
   .currency-select{
-    flex:0 0 96px; border-radius:12px; border:none; background:var(--card-dark); color:#fff;
+    flex:0 0 96px; border-radius:12px; border:1px solid var(--border); background:var(--card-dark); color:#fff;
     font-size:15px; font-weight:700; padding:0 24px 0 12px; appearance:none; -webkit-appearance:none;
     text-align:center; text-align-last:center;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
     background-repeat:no-repeat; background-position:right 8px center;
   }
-  .amount-input{flex:1; font-size:26px; font-weight:800; text-align:center; border-radius:12px; border:1px solid var(--border); background:var(--card); padding:14px; width:100%;}
+  .amount-input{flex:1; font-size:26px; font-weight:800; text-align:center; border-radius:12px; border:1px solid var(--border); background:var(--card); padding:14px; width:100%; margin-bottom:0;}
 
   .transfer-row{display:flex; align-items:center; gap:8px; margin-bottom:14px;}
   .transfer-row .plain-field{flex:1; margin-bottom:0;}
   .transfer-arrow{color:var(--muted); font-size:18px;}
+
+  .joint-field{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:14px 16px; border-radius:12px; border:1px solid var(--border); background:var(--card); margin-bottom:14px;
+  }
+  .joint-field span{font-size:13px; color:var(--text); line-height:1.3;}
+  .joint-field input[type=checkbox]{width:20px; height:20px; flex:0 0 auto;}
 
   .photo-field{display:flex; gap:10px;}
   .photo-btn{
@@ -161,8 +159,10 @@
   .section-title{font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin:4px 0 10px; display:flex; justify-content:space-between; align-items:center;}
   .section-title button{background:none; border:none; color:var(--accent); font-size:12px; padding:0;}
 
+  .entries-scroll{max-height:60vh; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+
   .entry{
-    background:var(--bg); border-radius:14px; padding:12px 14px; margin-bottom:8px;
+    background:var(--card-dark); border-radius:14px; padding:12px 14px; margin-bottom:8px;
     display:flex; align-items:center; gap:10px;
   }
   .entry .stripe{width:4px; align-self:stretch; border-radius:2px;}
@@ -170,8 +170,8 @@
   .entry.expense .stripe{background:var(--expense);}
   .entry .info{flex:1; min-width:0;}
   .entry .title{font-size:14px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .entry .cat{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .entry .meta{font-size:11px; color:var(--muted); margin-top:2px;}
+  .entry .cat{font-size:12px; color:rgba(255,255,255,.55); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .entry .meta{font-size:11px; color:rgba(255,255,255,.4); margin-top:2px;}
   .entry .amount{font-size:15px; font-weight:800; white-space:nowrap;}
   .entry.income .amount{color:var(--income);}
   .entry.expense .amount{color:var(--expense);}
@@ -189,12 +189,12 @@
   .shutter{width:70px; height:70px; border-radius:50%; background:#fff; border:4px solid rgba(255,255,255,.4);}
 
   .modal-backdrop{position:fixed; inset:0; background:rgba(10,10,12,.6); z-index:90; display:none; align-items:flex-end;}
-  .modal{background:var(--card); width:100%; border-radius:22px 22px 0 0; padding:18px 16px 26px; max-height:85vh; overflow:auto;}
+  .modal{background:var(--card); width:100%; border-radius:22px 22px 0 0; padding:18px 16px calc(26px + env(safe-area-inset-bottom)); max-height:85vh; overflow:auto;}
   .modal h3{margin:0 0 14px;}
   .modal p{margin:0; font-size:14px; color:var(--muted);}
   .modal-actions{display:flex; gap:10px; margin-top:16px;}
   .modal-actions button{flex:1; padding:13px; border-radius:10px; border:none; font-size:14px; font-weight:700;}
-  .btn-cancel{background:var(--bg); color:#fff;}
+  .btn-cancel{background:#f1f1f5; color:var(--text);}
   .btn-save{background:var(--accent); color:#fff;}
   .btn-delete{background:var(--expense); color:#fff;}
 
@@ -206,49 +206,51 @@
 </head>
 <body>
 
-<div class="fixed-header">
-  <div class="top-panel">
-    <div class="header-top">
-      <div class="employee-display" id="employeeDisplay">Сотрудник</div>
-      <button class="refresh-btn" id="btnRefresh" aria-label="Обновить">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="23 4 23 10 17 10"></polyline>
-          <polyline points="1 20 1 14 7 14"></polyline>
-          <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10M1 14l5.36 4.36A9 9 0 0 0 20.49 15"></path>
-        </svg>
-      </button>
-    </div>
-    <div class="sync-meta" id="syncMeta">Загрузка...</div>
-    <div class="wallet-strip" id="walletStrip"></div>
-  </div>
-
-  <div class="type-zone">
-    <button class="type-btn income active" id="btnIncome">Приход <span class="arrow">↓</span></button>
-    <button class="type-btn transfer" id="btnTransfer">
+<div class="top-panel">
+  <div class="header-top">
+    <div class="employee-display" id="employeeDisplay">Ответственный</div>
+    <button class="refresh-btn" id="btnRefresh" aria-label="Обновить">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
-        <polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+        <polyline points="23 4 23 10 17 10"></polyline>
+        <polyline points="1 20 1 14 7 14"></polyline>
+        <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10M1 14l5.36 4.36A9 9 0 0 0 20.49 15"></path>
       </svg>
     </button>
-    <button class="type-btn expense" id="btnExpense">Расход <span class="arrow">↑</span></button>
   </div>
+  <div class="sync-meta" id="syncMeta">Загрузка...</div>
+  <div class="wallet-strip" id="walletStrip"></div>
 </div>
 
-<div class="content-panel">
+<div class="type-zone">
+  <button class="type-btn income active" id="btnIncome">Приход <span class="arrow">↓</span></button>
+  <button class="type-btn transfer" id="btnTransfer">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+      <polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+    </svg>
+  </button>
+  <button class="type-btn expense" id="btnExpense">Расход <span class="arrow">↑</span></button>
+</div>
+
+<div class="content">
 
   <div class="tabs">
     <button class="tab-btn active" id="tabBtnAdd">Добавить</button>
     <button class="tab-btn" id="tabBtnEntries">Записи</button>
   </div>
 
-  <div id="tabAdd" class="tab-pane">
+  <div id="tabAdd">
     <div id="normalFields">
       <div class="field-float">
         <input type="text" id="title" placeholder=" " enterkeyhint="next">
-        <label for="title">Наименование<span class="req">*</span></label>
+        <label for="title">Назначение<span class="req">*</span></label>
       </div>
       <div class="plain-field">
-        <input type="text" class="category-input" id="categoryInput" placeholder="Статья" autocomplete="off">
+        <input type="text" class="lookup-input" id="contragentInput" placeholder="Контрагент" autocomplete="off">
+        <div class="autocomplete-list" id="contragentSuggestions"></div>
+      </div>
+      <div class="plain-field">
+        <input type="text" class="lookup-input" id="categoryInput" placeholder="Статья" autocomplete="off">
         <div class="autocomplete-list" id="categorySuggestions"></div>
       </div>
     </div>
@@ -267,12 +269,7 @@
 
     <div class="amount-row">
       <select id="currencySelect" class="currency-select"></select>
-      <input type="number" inputmode="decimal" id="amount" class="amount-input" placeholder="0" enterkeyhint="done">
-    </div>
-
-    <div class="field-float">
-      <textarea id="comment" placeholder=" "></textarea>
-      <label for="comment">Комментарий</label>
+      <input type="number" inputmode="decimal" id="amount" class="amount-input" placeholder="0" enterkeyhint="next">
     </div>
 
     <div class="plain-field" id="photoFieldWrapper">
@@ -289,12 +286,12 @@
     <div class="sync-status" id="syncStatus"></div>
   </div>
 
-  <div id="tabEntries" class="tab-pane" style="display:none;">
+  <div id="tabEntries" style="display:none;">
     <div class="section-title">
       <span>Последние записи</span>
       <button id="btnRetry" style="display:none;">Повторить отправку</button>
     </div>
-    <div id="entriesList"></div>
+    <div class="entries-scroll"><div id="entriesList"></div></div>
   </div>
 
 </div>
@@ -323,11 +320,11 @@
     </div>
     <div class="field-float">
       <input type="text" id="editTitle" placeholder=" ">
-      <label for="editTitle">Наименование</label>
+      <label for="editTitle">Назначение</label>
     </div>
     <div class="plain-field">
-      <input type="text" class="category-input" id="editCategoryInput" placeholder="Статья" autocomplete="off">
-      <div class="autocomplete-list" id="editCategorySuggestions"></div>
+      <input type="text" class="lookup-input" id="editContragentInput" placeholder="Контрагент" autocomplete="off">
+      <div class="autocomplete-list" id="editContragentSuggestions"></div>
     </div>
     <div class="plain-field">
       <select id="editWallet"></select>
@@ -336,9 +333,9 @@
       <select id="editCurrencySelect" class="currency-select"></select>
       <input type="number" id="editAmount" class="amount-input">
     </div>
-    <div class="field-float">
-      <textarea id="editComment" placeholder=" "></textarea>
-      <label for="editComment">Комментарий</label>
+    <div class="plain-field">
+      <input type="text" class="lookup-input" id="editCategoryInput" placeholder="Статья" autocomplete="off">
+      <div class="autocomplete-list" id="editCategorySuggestions"></div>
     </div>
     <div class="plain-field">
       <div id="editPhotoArea"></div>
@@ -367,7 +364,7 @@
   <div class="modal">
     <h3 id="employeeModalTitle">Как вас зовут?</h3>
     <div class="plain-field" style="margin-top:14px;">
-      <input type="text" id="employeeNameInput" placeholder="Имя сотрудника" style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border); background:var(--card); font-size:16px;">
+      <input type="text" id="employeeNameInput" placeholder="Имя" style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border); background:var(--card); font-size:16px;">
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" id="btnEmployeeCancel" style="display:none;">Отмена</button>
@@ -389,8 +386,8 @@ const DEFAULT_CATEGORIES = {
   expense: ["Аренда", "Зарплата", "Коммунальные услуги", "Закупки", "Реклама", "Транспорт", "Прочее"]
 };
 const DEFAULT_WALLETS = [{ name: "Касса", currency: "RUB" }];
-const CURRENCIES = ["RUB", "USD", "EUR", "THB"];
 const CURRENCY_SYMBOLS = { RUB:"₽", USD:"$", EUR:"€", THB:"฿" };
+const CURRENCIES = ["RUB", "USD", "EUR", "THB"];
 function currencySymbol(code){ return CURRENCY_SYMBOLS[code] || code || ""; }
 
 /* ============================================================================ */
@@ -404,6 +401,7 @@ const state = {
   entries: [],
   categories: null,
   wallets: null,
+  contragents: [],
   selectedWallet: null,
   manualCurrency: null,
   employeeName: "",
@@ -420,6 +418,7 @@ const el = id => document.getElementById(id);
 
 function currentCategories(){ return state.categories || DEFAULT_CATEGORIES; }
 function currentWallets(){ return state.wallets || DEFAULT_WALLETS; }
+function walletCurrency(name){ const w = currentWallets().find(w=>w.name===name); return w ? w.currency : "RUB"; }
 
 function fillWalletOptions(select){
   select.innerHTML = currentWallets().map(w=>
@@ -430,7 +429,7 @@ function fillCurrencySelect(select){
   select.innerHTML = CURRENCIES.map(c=> `<option value="${c}">${currencySymbol(c)} ${c}</option>`).join("");
 }
 
-/* ---------- Автодополнение статей ---------- */
+/* ---------- Автодополнение (статьи, контрагенты) ---------- */
 
 function setupAutocomplete(inputEl, listEl, getOptions){
   function render(){
@@ -451,6 +450,8 @@ function setupAutocomplete(inputEl, listEl, getOptions){
 }
 setupAutocomplete(el("categoryInput"), el("categorySuggestions"), ()=> currentCategories()[state.type] || []);
 setupAutocomplete(el("editCategoryInput"), el("editCategorySuggestions"), ()=> currentCategories()[el("editType").value] || []);
+setupAutocomplete(el("contragentInput"), el("contragentSuggestions"), ()=> state.contragents || []);
+setupAutocomplete(el("editContragentInput"), el("editContragentSuggestions"), ()=> state.contragents || []);
 
 /* ---------- Вкладки ---------- */
 
@@ -494,15 +495,12 @@ el("btnTransfer").onclick = ()=> setType("transfer");
 
 function updateCurrencySelectValue(){
   let code = "RUB";
-  if(state.type === "transfer" && !state.manualCurrency){
-    const fromName = el("transferFrom").value;
-    const w = currentWallets().find(w=>w.name===fromName);
-    if(w) code = w.currency;
-  } else if(state.manualCurrency){
+  if(state.manualCurrency){
     code = state.manualCurrency;
+  } else if(state.type === "transfer"){
+    code = walletCurrency(el("transferFrom").value);
   } else {
-    const w = currentWallets().find(w=>w.name===state.selectedWallet);
-    if(w) code = w.currency;
+    code = walletCurrency(state.selectedWallet);
   }
   el("currencySelect").value = code;
 }
@@ -517,23 +515,22 @@ function fillTransferWallets(){
 }
 function updateTransferToOptions(){
   const fromName = el("transferFrom").value;
-  const fromWallet = currentWallets().find(w=>w.name===fromName);
-  const currency = fromWallet ? fromWallet.currency : null;
-  const options = currentWallets().filter(w=> w.name!==fromName && (!currency || w.currency===currency));
+  const currency = walletCurrency(fromName);
+  const options = currentWallets().filter(w=> w.name!==fromName && w.currency===currency);
   el("transferTo").innerHTML = options.length
     ? options.map(w=>`<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)}</option>`).join("")
     : `<option value="">Нет подходящих кошельков</option>`;
 }
 
-/* ---------- Имя сотрудника ---------- */
+/* ---------- Ответственный: спрашиваем один раз при первом запуске ---------- */
 
 function updateEmployeeDisplay(){
   el("employeeDisplay").innerHTML = state.employeeName
     ? escapeHtml(state.employeeName) + '<span class="hint">нажмите, чтобы сменить</span>'
-    : "Сотрудник";
+    : "Ответственный";
 }
 function openEmployeeModal(mandatory){
-  el("employeeModalTitle").textContent = mandatory ? "Как вас зовут?" : "Сменить сотрудника";
+  el("employeeModalTitle").textContent = mandatory ? "Как вас зовут?" : "Сменить ответственного";
   el("employeeNameInput").value = state.employeeName || "";
   el("btnEmployeeCancel").style.display = mandatory ? "none" : "inline";
   el("employeeBackdrop").style.display = "flex";
@@ -695,6 +692,8 @@ function loadCategoriesCache(){ try{ const c = JSON.parse(localStorage.getItem("
 function saveCategoriesCache(){ if(state.categories) localStorage.setItem("dds_categories_cache", JSON.stringify(state.categories)); }
 function loadWalletsCache(){ try{ const w = JSON.parse(localStorage.getItem("dds_wallets_cache")||"null"); if(w) state.wallets=w; }catch(e){} }
 function saveWalletsCache(){ if(state.wallets) localStorage.setItem("dds_wallets_cache", JSON.stringify(state.wallets)); }
+function loadContragentsCache(){ try{ const c = JSON.parse(localStorage.getItem("dds_contragents_cache")||"null"); if(c) state.contragents=c; }catch(e){} }
+function saveContragentsCache(){ localStorage.setItem("dds_contragents_cache", JSON.stringify(state.contragents)); }
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 
@@ -720,26 +719,23 @@ async function fetchFromServer(){
 }
 
 function mapRemoteRow(r){
+  const hasIncome = r.incomeAmount !== "" && r.incomeAmount !== null && r.incomeAmount !== undefined && Number(r.incomeAmount) !== 0;
   return {
-    id: String(r.id), timestamp: r.timestamp,
-    type: (r.type === "Приход" || r.type === "Доход") ? "income" : "expense",
+    id: String(r.id), timestamp: r.createdAt || r.date,
+    type: hasIncome ? "income" : "expense",
     employee: r.employee||"", title: r.title||"", category: r.category||"",
-    wallet: r.wallet||"", currency: r.currency||"RUB",
-    amount: Number(r.amount)||0, comment: r.comment||"",
+    contragent: r.contragent||"", joint: r.joint === "да",
+    wallet: r.wallet||"", currency: r.currency || walletCurrency(r.wallet),
+    amount: hasIncome ? (Number(r.incomeAmount)||0) : (Number(r.expenseAmount)||0),
     photo: null, photoUrl: r.photoUrl||null, transferId: r.transferId||null,
     status: "synced"
   };
 }
 
 function reconcileWithRemote(data){
-  if(data.categories){
-    state.categories = data.categories;
-    saveCategoriesCache();
-  }
-  if(data.wallets){
-    state.wallets = data.wallets;
-    saveWalletsCache();
-  }
+  if(data.categories){ state.categories = data.categories; saveCategoriesCache(); }
+  if(data.wallets){ state.wallets = data.wallets; saveWalletsCache(); }
+  if(data.contragents){ state.contragents = data.contragents; saveContragentsCache(); }
   if(typeof data.totalCount === "number") state.totalCount = data.totalCount;
 
   if(data.rows){
@@ -766,7 +762,6 @@ function reconcileWithRemote(data){
   }
   renderWalletStrip();
   renderEntries();
-  updateCurrencySelectValue();
 }
 
 function updateSyncMetaTimestamp(){
@@ -803,7 +798,7 @@ function validateForm(){
     return true;
   }
   if(!state.selectedWallet){ showToast("Выберите кошелёк"); return false; }
-  if(!el("title").value.trim()){ showToast("Укажите наименование"); return false; }
+  if(!el("title").value.trim()){ showToast("Укажите назначение"); return false; }
   const amountVal = parseFloat(el("amount").value);
   if(!amountVal || amountVal <= 0){ showToast("Введите сумму"); return false; }
   return true;
@@ -813,21 +808,21 @@ async function submitEntry(){
   if(!validateForm()) return;
   if(state.type === "transfer"){ await submitTransfer(); return; }
 
-  const currency = el("currencySelect").value;
   const entry = {
     id: uid(), timestamp: new Date().toISOString(), type: state.type,
     employee: state.employeeName, title: el("title").value.trim(),
-    category: el("categoryInput").value.trim(), wallet: state.selectedWallet, currency,
-    amount: parseFloat(el("amount").value), comment: el("comment").value.trim(),
+    contragent: el("contragentInput").value.trim(),
+    category: el("categoryInput").value.trim(),
+    wallet: state.selectedWallet, currency: el("currencySelect").value,
+    amount: parseFloat(el("amount").value),
     photo: state.photo ? state.photo.dataUrl : null, photoUrl: null, status: "pending"
   };
 
   state.entries.unshift(entry);
   saveEntries(); renderEntries();
 
-  el("title").value=""; el("categoryInput").value=""; el("amount").value=""; el("comment").value="";
+  el("title").value=""; el("contragentInput").value=""; el("categoryInput").value=""; el("amount").value="";
   state.photo = null; renderPhotoArea();
-  state.manualCurrency = null; updateCurrencySelectValue();
 
   await syncEntry(entry);
   refreshFromServer(false);
@@ -838,30 +833,29 @@ async function submitTransfer(){
   const toName = el("transferTo").value;
   const currency = el("currencySelect").value;
   const amount = parseFloat(el("amount").value);
-  const comment = el("comment").value.trim();
+  const contragent = el("contragentInput").value.trim();
   const transferId = uid();
   const ts = new Date().toISOString();
 
   const outEntry = { id: transferId+"-out", timestamp: ts, type:"expense", employee: state.employeeName,
-    title:"Перевод → "+toName, category:"Перемещение", wallet: fromName, currency,
-    amount, comment, photo:null, photoUrl:null, status:"pending", transferId };
+    title:"Перевод → "+toName, category:"Перемещение", contragent, wallet: fromName, currency,
+    amount, photo:null, photoUrl:null, status:"pending", transferId };
   const inEntry = { id: transferId+"-in", timestamp: ts, type:"income", employee: state.employeeName,
-    title:"Перевод ← "+fromName, category:"Перемещение", wallet: toName, currency,
-    amount, comment, photo:null, photoUrl:null, status:"pending", transferId };
+    title:"Перевод ← "+fromName, category:"Перемещение", contragent, wallet: toName, currency,
+    amount, photo:null, photoUrl:null, status:"pending", transferId };
 
   state.entries.unshift(outEntry, inEntry);
   saveEntries(); renderEntries();
-  el("amount").value=""; el("comment").value="";
-  state.manualCurrency = null; updateCurrencySelectValue();
+  el("amount").value="";
 
-  await sendTransfer(transferId, fromName, toName, amount, comment, ts, currency, outEntry, inEntry);
+  await sendTransfer(transferId, fromName, toName, amount, contragent, ts, currency, outEntry, inEntry);
   refreshFromServer(false);
 }
 
-async function sendTransfer(transferId, fromName, toName, amount, comment, ts, currency, outEntry, inEntry){
+async function sendTransfer(transferId, fromName, toName, amount, contragent, ts, currency, outEntry, inEntry){
   setSyncStatus("Отправка перевода...", "pending");
   try{
-    await sendToServer({ action:"transfer", id:transferId, fromWallet:fromName, toWallet:toName, amount, comment, employee:state.employeeName, timestamp: ts, currency });
+    await sendToServer({ action:"transfer", id:transferId, fromWallet:fromName, toWallet:toName, amount, contragent, employee:state.employeeName, timestamp: ts, currency });
     outEntry.status = "pending"; inEntry.status = "pending";
     outEntry.sentAt = Date.now(); inEntry.sentAt = Date.now();
     state.pendingStatusEntryId = outEntry.id;
@@ -879,8 +873,8 @@ async function syncEntry(entry){
   try{
     await sendToServer({
       action:"add", id: entry.id, timestamp: entry.timestamp, type: entry.type,
-      employee: entry.employee, title: entry.title, category: entry.category,
-      wallet: entry.wallet, currency: entry.currency, amount: entry.amount, comment: entry.comment,
+      employee: entry.employee, title: entry.title, contragent: entry.contragent,
+      category: entry.category, wallet: entry.wallet, currency: entry.currency, amount: entry.amount,
       transferId: entry.transferId || null,
       photoBase64: entry.photo ? entry.photo.split(",")[1] : null,
       photoMime: entry.photo ? entry.photo.split(";")[0].split(":")[1] : null
@@ -912,7 +906,7 @@ function retryPending(){
     const out = legs.find(l=>l.id.endsWith("-out"));
     const inn = legs.find(l=>l.id.endsWith("-in"));
     if(out && inn){
-      sendTransfer(tid, out.wallet, inn.wallet, out.amount, out.comment, out.timestamp, out.currency, out, inn)
+      sendTransfer(tid, out.wallet, inn.wallet, out.amount, out.contragent, out.timestamp, out.currency, out, inn)
         .then(()=> refreshFromServer(false));
     }
   });
@@ -942,8 +936,8 @@ function renderEntries(){
   list.innerHTML = visible.map(e=>{
     const dot = e.status==="error" ? `<span class="dot error"></span>` : e.status==="pending" ? `<span class="dot pending"></span>` : "";
     const d = new Date(e.timestamp);
-    const dateStr = d.toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"}) + " " + d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
-    const metaStr = [dateStr, e.employee, e.wallet].filter(Boolean).join(" · ");
+    const dateStr = isNaN(d) ? "" : (d.toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"}) + " " + d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"}));
+    const metaStr = [dateStr, e.contragent, e.employee, e.wallet].filter(Boolean).join(" · ");
     return `<div class="entry ${e.type}" data-id="${e.id}">
       <div class="stripe"></div>
       <div class="info">
@@ -974,6 +968,7 @@ function openEditModal(id){
   el("editType").value = entry.type;
   el("editType").disabled = isTransfer;
   el("editTitle").value = entry.title || "";
+  el("editContragentInput").value = entry.contragent || "";
 
   if(isTransfer){
     el("editCategoryInput").value = "Перемещение";
@@ -993,14 +988,12 @@ function openEditModal(id){
   el("editCurrencySelect").disabled = isTransfer;
 
   el("editAmount").value = entry.amount;
-  el("editComment").value = entry.comment || "";
   state.editPhoto = entry.photo ? { dataUrl: entry.photo, mime: null } : null;
   state.editPhotoUrl = (!entry.photo && entry.photoUrl) ? entry.photoUrl : null;
   state.editPhotoChanged = false;
   renderEditPhotoArea();
   el("editModalBackdrop").style.display = "flex";
 }
-el("editType").onchange = ()=>{}; // тип у существующей записи не меняется свободно; статья вводится вручную
 el("btnEditCancel").onclick = ()=>{ el("editModalBackdrop").style.display = "none"; };
 
 el("btnEditSave").onclick = async ()=>{
@@ -1008,15 +1001,15 @@ el("btnEditSave").onclick = async ()=>{
   if(!entry) return;
   entry.type = el("editType").value;
   entry.title = el("editTitle").value.trim();
+  entry.contragent = el("editContragentInput").value.trim();
   entry.category = el("editCategoryInput").value.trim();
   entry.wallet = el("editWallet").value;
   entry.currency = el("editCurrencySelect").value;
   entry.amount = parseFloat(el("editAmount").value) || entry.amount;
-  entry.comment = el("editComment").value.trim();
   entry.status = "pending";
 
   const payload = { action:"edit", id:entry.id, type:entry.type, employee:entry.employee, title:entry.title,
-    category:entry.category, wallet:entry.wallet, currency:entry.currency, amount:entry.amount, comment:entry.comment };
+    contragent:entry.contragent, category:entry.category, wallet:entry.wallet, currency:entry.currency, amount:entry.amount };
   if(state.editPhotoChanged){
     if(state.editPhoto){
       payload.photoBase64 = state.editPhoto.dataUrl.split(",")[1];
@@ -1075,6 +1068,7 @@ function showToast(text){
 
 loadCategoriesCache();
 loadWalletsCache();
+loadContragentsCache();
 state.selectedWallet = localStorage.getItem(WALLET_KEY) || (currentWallets()[0] && currentWallets()[0].name) || null;
 fillCurrencySelect(el("currencySelect"));
 setType("income");
@@ -1088,7 +1082,7 @@ updateEmployeeDisplay();
 if(!state.employeeName) openEmployeeModal(true);
 
 el("title").addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); el("amount").focus(); } });
-el("amount").addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); el("amount").blur(); submitEntry(); } });
+el("amount").addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); el("amount").blur(); } });
 
 refreshFromServer(false);
 setInterval(()=> refreshFromServer(false), REFRESH_INTERVAL_MS);
